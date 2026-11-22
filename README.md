@@ -169,6 +169,7 @@ make test    # XCTest suite
 make app     # release .app bundle
 make dmg     # release .app bundle + DMG
 make qa      # debug visual QA: 30 screenshots, including shape-growth frames
+make watch   # rebuild + relaunch on source changes while editing in Cursor/DSH
 ```
 
 Direct equivalents:

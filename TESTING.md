@@ -153,6 +153,10 @@ The script fails if any expected screenshot is missing or empty, if global short
 
 See [QA.md](QA.md) for the screenshot index.
 
+## Development live reload
+
+`make watch` / `./Scripts/dev-watch.sh` watches source files, rebuilds the release app, and relaunches it. It leaves the app compact; use ⌥Space. This is the supported workflow for iterating from Cursor or DeepSeek Harness.
+
 ## Manual QA matrix
 
 These checks require a Mac with a physical notch, a GUI session, and optionally a second display. Check each item and record the macOS version.

@@ -2,7 +2,7 @@ SHELL := /bin/bash
 ROOT := $(CURDIR)
 CACHE := $(ROOT)/.build
 
-.PHONY: app dmg build test qa run clean
+.PHONY: app dmg build test qa run watch clean
 
 app:
 	./Scripts/build-app.sh
@@ -25,6 +25,9 @@ qa:
 
 run: app
 	open "$(ROOT)/build/NOTCHORA.app"
+
+watch:
+	./Scripts/dev-watch.sh
 
 clean:
 	swift package clean || true
