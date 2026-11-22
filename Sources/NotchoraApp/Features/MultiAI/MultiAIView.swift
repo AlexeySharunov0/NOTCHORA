@@ -23,19 +23,26 @@ struct MultiAIView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
+        ZStack {
+            VStack(spacing: 0) {
+                header
 
-            if isSetup {
-                setup
-            } else if let session = model.multiAI {
-                sessionView(session)
+                if isSetup {
+                    setup
+                } else if let session = model.multiAI {
+                    sessionView(session)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if compareSheetPresented {
+                CompareAnswersSheet(model: model) {
+                    compareSheetPresented = false
+                }
+                .zIndex(10)
             }
         }
         .onAppear(perform: initialize)
-        .sheet(isPresented: $compareSheetPresented) {
-            CompareAnswersSheet(model: model)
-        }
     }
 
     private var header: some View {
@@ -47,7 +54,7 @@ struct MultiAIView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.nTextSecondary)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.primary.opacity(0.045)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
 
@@ -93,8 +100,7 @@ struct MultiAIView: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
+        .background(Color.black)
     }
 
     private var setup: some View {
@@ -124,7 +130,7 @@ struct MultiAIView: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.5))
+                            .fill(Color.black)
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -218,10 +224,6 @@ struct MultiAIView: View {
             }
             .padding(.horizontal, 8)
             .frame(height: 29)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(selected ? Color.nAccentSoft : Color.clear)
-            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -247,10 +249,6 @@ struct MultiAIView: View {
                     }
                 }
                 .padding(10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.primary.opacity(0.03))
-                )
 
                 if let comparison = session.comparison {
                     comparisonCard(comparison, prompt: session.prompt)
@@ -384,17 +382,7 @@ struct MultiAIView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.nSurfaceRaised.opacity(0.5))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    target.isRunning ? Color.nAccent.opacity(0.20) : Color.nHairline,
-                    lineWidth: 0.8
-                )
-        }
+        .padding(.vertical, 3)
     }
 
     private func comparisonCard(_ comparison: ComparisonState, prompt: String) -> some View {
@@ -448,14 +436,7 @@ struct MultiAIView: View {
                 .foregroundStyle(Color.nTextTertiary)
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.nAccentSoft.opacity(0.55))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.nAccent.opacity(0.18), lineWidth: 0.8)
-        }
+        .padding(.vertical, 3)
     }
 
     private var canStart: Bool {
@@ -541,8 +522,7 @@ struct MultiAIStatusPill: View {
 
 struct CompareAnswersSheet: View {
     let model: AppModel
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
     @State private var target = ModelSelection(providerID: .openAI, modelID: AIProviderID.openAI.defaultModelID)
     @State private var didInitialize = false
 
@@ -569,17 +549,16 @@ struct CompareAnswersSheet: View {
                         .foregroundStyle(Color.nTextTertiary)
                 }
                 Spacer()
-                Button { dismiss() } label: {
+                Button { onClose() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(Color.nTextTertiary)
                         .frame(width: 24, height: 24)
-                        .background(Circle().fill(Color.primary.opacity(0.05)))
+                        .background(Circle().fill(Color.black))
                 }
                 .buttonStyle(.borderless)
             }
             .padding(16)
-            .overlay(alignment: .bottom) { Hairline() }
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("A third model reads the completed responses and compares them. This is a model-generated analysis, not verified fact-checking.")
@@ -606,26 +585,13 @@ struct CompareAnswersSheet: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 7) {
-                        ProviderGlyph(provider: target.providerID, size: 18)
-                        Text(model.catalog.model(for: target).displayName)
-                            .font(.nSmallMedium)
-                            .foregroundStyle(Color.nTextPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.up.chevron.down")
-                            .font(.system(size: 8))
-                            .foregroundStyle(Color.nTextTertiary)
-                    }
-                    .padding(.horizontal, 9)
-                    .frame(height: 34)
-                    .background(
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .fill(Color.primary.opacity(0.035))
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .strokeBorder(Color.nHairline, lineWidth: 0.8)
-                    }
+                    Text("\(target.providerID.shortName) · \(model.catalog.model(for: target).displayName)  ⌄")
+                        .font(.nSmallMedium)
+                        .foregroundStyle(Color.nTextPrimary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 9)
+                        .frame(height: 34)
+                        .background(Color.black)
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
@@ -662,7 +628,7 @@ struct CompareAnswersSheet: View {
                         .padding(9)
                         .background(
                             RoundedRectangle(cornerRadius: 9, style: .continuous)
-                                .fill(Color.nSurfaceSunken.opacity(0.45))
+                                .fill(Color.black)
                         )
                     } else if comparison.status == .failed {
                         Text(comparison.errorDescription ?? "Comparison failed.")
@@ -679,7 +645,7 @@ struct CompareAnswersSheet: View {
                         .buttonStyle(NButtonStyle(variant: .ghost))
                 }
                 Spacer()
-                Button("Close") { dismiss() }
+                Button("Close") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Button("Start Comparison") {
                     model.startComparison(selection: target)
@@ -693,8 +659,9 @@ struct CompareAnswersSheet: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 560, height: 620)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 820)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .onAppear(perform: initialize)
     }
 

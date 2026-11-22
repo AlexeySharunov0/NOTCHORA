@@ -47,7 +47,11 @@ EXPECTED=(
   05-workspace-dark.png 06-workspace-light.png 07-history.png 08-tasks.png
   09-workflows.png 10-multi-ai.png 11-compact-active.png
   12-settings-general.png 13-settings-providers.png 14-settings-privacy.png
-  15-settings-light.png
+  15-settings-light.png 16-expand-70ms.png 17-expand-170ms.png
+  18-expand-350ms.png 19-expand-final.png 20-collapse-80ms.png
+  21-collapse-200ms.png 22-collapse-400ms.png 23-collapse-final.png
+  24-model-picker.png 25-handoff.png 26-system-prompt.png
+  27-screen-capture.png 28-voice.png 29-workflow-editor.png
 )
 
 for file in "${EXPECTED[@]}"; do
@@ -76,4 +80,8 @@ if ! grep -q "firstResponder: NSTextView" "$STATUS"; then
   exit 1
 fi
 
-echo "Visual QA passed: ${#EXPECTED[@]} screenshots, shortcuts registered, composer focused"
+for name in 01-compact 02-onboarding 03-chat-dark 05-workspace-dark 12-settings-general 16-expand-70ms 17-expand-170ms 20-collapse-80ms 21-collapse-200ms 23-collapse-final; do
+  swift "$ROOT/Scripts/validate-notch-shape.swift" "$ROOT/build/screenshots/qa/$name.png" >/dev/null
+done
+
+echo "Visual QA passed: ${#EXPECTED[@]} screenshots, centered opaque welded notch growth/collapse, shortcuts registered, composer focused"

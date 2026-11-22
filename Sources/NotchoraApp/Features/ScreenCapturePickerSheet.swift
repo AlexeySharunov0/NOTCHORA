@@ -2,8 +2,7 @@ import SwiftUI
 
 struct ScreenCapturePickerSheet: View {
     let model: AppModel
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
     @State private var mode: ScreenCaptureMode = .selectedArea
 
     private var permissionGranted: Bool {
@@ -43,11 +42,11 @@ struct ScreenCapturePickerSheet: View {
             .padding(16)
 
             HStack {
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Spacer()
                 Button("Capture") {
-                    dismiss()
+                    onClose()
                     Task {
                         try? await Task.sleep(for: .milliseconds(120))
                         model.captureScreen(mode: mode)
@@ -60,8 +59,9 @@ struct ScreenCapturePickerSheet: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 470, height: 430)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 640)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .onAppear {
             model.permissions.refresh()
         }
@@ -87,18 +87,16 @@ struct ScreenCapturePickerSheet: View {
             }
             Spacer()
             Button {
-                dismiss()
+                onClose()
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.6))
                     .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.primary.opacity(0.05)))
             }
             .buttonStyle(.borderless)
         }
         .padding(16)
-        .overlay(alignment: .bottom) { Hairline() }
     }
 
     private func modeRow(_ candidate: ScreenCaptureMode) -> some View {
@@ -125,14 +123,6 @@ struct ScreenCapturePickerSheet: View {
             }
             .padding(.horizontal, 10)
             .frame(height: 46)
-            .background(
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(mode == candidate ? Color.nAccentSoft : Color.primary.opacity(0.025))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .strokeBorder(mode == candidate ? Color.nAccent.opacity(0.30) : Color.nHairline, lineWidth: 0.8)
-            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -157,14 +147,18 @@ struct ScreenCapturePickerSheet: View {
                 .buttonStyle(NButtonStyle(variant: .ghost, compact: true))
             }
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Color.nWarning.opacity(0.07))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(Color.nWarning.opacity(0.16), lineWidth: 0.8)
+        .padding(.vertical, 4)
+    }
+}
+
+
+struct ScreenCaptureOverlay: View {
+    let model: AppModel
+
+    var body: some View {
+        ScreenCapturePickerSheet(model: model) {
+            model.isScreenCapturePickerPresented = false
         }
+        .background(Color.black)
     }
 }

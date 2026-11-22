@@ -30,10 +30,7 @@ struct ChatView: View {
                 .frame(maxWidth: 860)
                 .frame(maxWidth: .infinity)
         }
-        .background {
-            AmbientGlow(color: .nAccent)
-                .opacity(0.45)
-        }
+        .background(Color.black)
         .onAppear {
             model.composerFocusRequest += 1
         }
@@ -167,20 +164,9 @@ struct EmptyChatState: View {
                     .foregroundStyle(Color.nTextTertiary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
-                    .background(
-                        Capsule().fill(Color.primary.opacity(0.05))
-                    )
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.nSurfaceRaised.opacity(0.55))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Color.nHairline, lineWidth: 0.8)
-        }
+        .padding(.vertical, 8)
     }
 
     private var greeting: some View {
@@ -308,15 +294,7 @@ struct EmptyChatState: View {
                     .multilineTextAlignment(.leading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(Color.primary.opacity(0.028))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .strokeBorder(Color.nHairline.opacity(0.8), lineWidth: 0.7)
-            }
+            .padding(.vertical, 8)
         }
         .buttonStyle(.plain)
         .hoverHighlight(radius: 11)

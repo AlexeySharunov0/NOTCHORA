@@ -30,13 +30,10 @@ struct TasksView: View {
             header
 
             HStack(spacing: 8) {
-                Picker("Filter", selection: $filter) {
-                    ForEach(TaskFilter.allCases) { filter in
-                        Text(filter.title).tag(filter)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+                NotchSegmentedPicker(
+                    selection: $filter,
+                    options: TaskFilter.allCases.map { ($0, $0.title) }
+                )
                 .frame(width: 150)
                 Spacer()
                 if model.tasks.tasks.contains(where: { $0.status.isTerminal }) {
@@ -79,7 +76,7 @@ struct TasksView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.nTextSecondary)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.primary.opacity(0.045)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
 
@@ -105,8 +102,7 @@ struct TasksView: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
+        .background(Color.black)
     }
 
     private func taskRow(_ task: AITask) -> some View {
@@ -178,7 +174,7 @@ struct TasksView: View {
                     .padding(8)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.55))
+                            .fill(Color.black)
                     )
                 } else {
                     Text(task.result.replacingOccurrences(of: "\n", with: " "))
@@ -222,14 +218,7 @@ struct TasksView: View {
             .foregroundStyle(Color.nTextTertiary)
         }
         .padding(9)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.primary.opacity(0.025))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.nHairline.opacity(0.8), lineWidth: 0.7)
-        }
+        .padding(.vertical, 2)
     }
 
     private func toggleExpanded(_ id: UUID) {
@@ -317,7 +306,7 @@ struct IndeterminateProgressBar: View {
     var body: some View {
         GeometryReader { proxy in
             Capsule()
-                .fill(Color.primary.opacity(0.055))
+                .fill(Color.black)
                 .overlay(alignment: .leading) {
                     Capsule()
                         .fill(

@@ -1,5 +1,4 @@
 import AppKit
-import QuartzCore
 import SwiftUI
 
 final class NotchPanel: NSPanel {
@@ -15,6 +14,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
     private var currentPresentation: PanelPresentation = .compact
     private var currentScreen: NSScreen
     private var hasWindow = false
+    private var containerTask: Task<Void, Never>?
 
     init(model: AppModel) {
         self.model = model
@@ -29,6 +29,9 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
             backing: .buffered,
             defer: false
         )
+        // The window is only a hit-test container. The visible notch surface is
+        // drawn as one opaque black SwiftUI shape; non-opaque is required only
+        // so the rounded lower corners can reveal the desktop.
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
@@ -81,13 +84,14 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
 
         switch presentation {
         case .hidden:
+            containerTask?.cancel()
+            panel.ignoresMouseEvents = false
+            panel.setFrame(currentFrame(for: .compact), display: false)
             panel.orderOut(nil)
             return
         case .compact:
-            panel.hasShadow = false
             let wasOpen = old == .expanded || old == .workspace
-            let target = currentFrame(for: .compact)
-            setFrame(target, animated: animated && old != .compact)
+            transition(to: currentFrame(for: .compact), animated: animated && old != .compact)
             panel.orderFront(nil)
             panel.resignKey()
             if wasOpen, NSWorkspace.shared.frontmostApplication?.processIdentifier == ProcessInfo.processInfo.processIdentifier,
@@ -96,32 +100,32 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
                 previous.activate()
             }
         case .expanded, .workspace:
-            panel.hasShadow = presentation == .workspace
-            let target = currentFrame(for: presentation)
             if old == .compact || old == .hidden {
                 let frontmost = NSWorkspace.shared.frontmostApplication
                 if let frontmost, frontmost.processIdentifier != ProcessInfo.processInfo.processIdentifier {
                     model.previousFrontmostPID = frontmost.processIdentifier
                 }
-                panel.alphaValue = 0.96
             }
-            setFrame(target, animated: animated)
+            transition(to: currentFrame(for: presentation), animated: animated)
             panel.orderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
             panel.makeKey()
-            panel.alphaValue = 1
         }
     }
 
     func refreshForScreenChange() {
+        containerTask?.cancel()
         positionOnPreferredScreen()
         guard currentPresentation != .hidden else { return }
+        panel.ignoresMouseEvents = false
         panel.setFrame(currentFrame(for: currentPresentation), display: true)
     }
 
     func snapToCurrentScreen() {
+        containerTask?.cancel()
         positionOnPreferredScreen()
         guard currentPresentation != .hidden else { return }
+        panel.ignoresMouseEvents = false
         panel.setFrame(currentFrame(for: currentPresentation), display: true)
     }
 
@@ -135,16 +139,44 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         NotchGeometry.frame(for: presentation, on: currentScreen)
     }
 
-    private func setFrame(_ frame: CGRect, animated: Bool) {
-        guard frame != panel.frame else { return }
-        if !animated || !model.settings.animationsEnabled || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
-            panel.setFrame(frame, display: true)
+    /// The window is only a transparent container. SwiftUI animates the black
+    /// surface itself; this method gives the surface enough room while it grows
+    /// and then trims the invisible container after the spring settles.
+    private func transition(to target: CGRect, animated: Bool) {
+        containerTask?.cancel()
+
+        let shouldAnimate = animated
+            && model.settings.animationsEnabled
+            && !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+
+        guard shouldAnimate else {
+            panel.ignoresMouseEvents = false
+            panel.setFrame(target, display: true)
             return
         }
-        NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.34
-            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.22, 1.0, 0.36, 1.0)
-            panel.animator().setFrame(frame, display: true)
+
+        let current = panel.frame
+        let width = max(current.width, target.width)
+        let height = max(current.height, target.height)
+        let top = max(current.maxY, target.maxY)
+        let container = CGRect(
+            x: currentScreen.frame.midX - width / 2,
+            y: top - height,
+            width: width,
+            height: height
+        )
+        if panel.frame != container {
+            panel.setFrame(container, display: true)
+        }
+
+        // The transparent part of the container must never swallow clicks.
+        panel.ignoresMouseEvents = target.width < container.width || target.height < container.height
+        let expected = currentPresentation
+        containerTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(580))
+            guard let self, !Task.isCancelled, self.currentPresentation == expected else { return }
+            self.panel.setFrame(target, display: true)
+            self.panel.ignoresMouseEvents = false
         }
     }
 
@@ -167,7 +199,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
 
     func windowDidResignKey(_ notification: Notification) {
         guard currentPresentation == .expanded || currentPresentation == .workspace else { return }
-        guard !model.voicePresented, !model.isCapturingScreen, !model.isTransientUIPresented, !model.suppressAutoCollapseForQA else { return }
+        guard !model.voicePresented, !model.isCapturingScreen, !model.suppressAutoCollapseForQA else { return }
         if panel.attachedSheet != nil { return }
         if let key = NSApp.keyWindow,
            key !== panel,

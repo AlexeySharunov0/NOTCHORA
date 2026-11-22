@@ -11,7 +11,6 @@ public final class SettingsStore {
 
     public var appearance: AppAppearance { didSet { persist(appearance.rawValue, Key.appearance) } }
     public var animationsEnabled: Bool { didSet { persist(animationsEnabled, Key.animations) } }
-    public var transparencyEnabled: Bool { didSet { persist(transparencyEnabled, Key.transparency) } }
     public var density: InterfaceDensity { didSet { persist(density.rawValue, Key.density) } }
     public var launchAtLogin: Bool { didSet { persist(launchAtLogin, Key.launchAtLogin) } }
     public var defaultBehavior: DefaultBehavior { didSet { persist(defaultBehavior.rawValue, Key.defaultBehavior) } }
@@ -37,7 +36,6 @@ public final class SettingsStore {
         let storedAppearance = defaults.string(forKey: Key.appearance)
         appearance = AppAppearance(rawValue: storedAppearance ?? "") ?? .system
         animationsEnabled = defaults.object(forKey: Key.animations) as? Bool ?? true
-        transparencyEnabled = defaults.object(forKey: Key.transparency) as? Bool ?? true
         density = InterfaceDensity(rawValue: defaults.string(forKey: Key.density) ?? "") ?? .comfortable
         launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
         defaultBehavior = DefaultBehavior(rawValue: defaults.string(forKey: Key.defaultBehavior) ?? "") ?? .lastConversation
@@ -98,7 +96,6 @@ public final class SettingsStore {
     public func resetGeneralSettings() {
         appearance = .system
         animationsEnabled = true
-        transparencyEnabled = true
         density = .comfortable
         defaultBehavior = .lastConversation
         defaultProviderID = .openAI
@@ -129,7 +126,6 @@ public final class SettingsStore {
     private enum Key {
         static let appearance = "notchora.appearance"
         static let animations = "notchora.animations"
-        static let transparency = "notchora.transparency"
         static let density = "notchora.density"
         static let launchAtLogin = "notchora.launchAtLogin"
         static let defaultBehavior = "notchora.defaultBehavior"

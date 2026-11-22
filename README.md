@@ -12,6 +12,8 @@ Built with Swift 6, SwiftUI, AppKit, ScreenCaptureKit, AVFoundation, Speech, Key
 
 ## Why it exists
 
+The centrepiece is a single SwiftUI surface welded to the top edge. It does not open a floating translucent panel below the notch: its width and height animate as one opaque black form, while the content fades in after the form has started to grow. There is no material, blur, glass, border, drop shadow, or second workspace window. Settings, history, workflows, handoff, screen capture, and the model picker all live inside the same surface.
+
 Most AI work is fragmented across browser tabs and separate desktop apps. NOTCHORA keeps the useful parts in one native surface:
 
 - ask any connected model without leaving the current app;
@@ -25,7 +27,7 @@ Most AI work is fragmented across browser tabs and separate desktop apps. NOTCHO
 
 | Area | What is implemented |
 |---|---|
-| Notch experience | Compact, expanded, and full workspace states; physical-notch detection; non-notch fallback; multi-display anchoring; Spaces/full-screen collection behavior; spring window transitions; reduced-motion support |
+| Notch experience | One continuous, opaque-black notch surface that physically grows downward and outward from the cutout; compact, expanded, and full workspace states; physical-notch detection; non-notch fallback; multi-display anchoring; Spaces/full-screen behavior; spring shape animation; reduced-motion support |
 | AI providers | Real streaming integrations for OpenAI, Anthropic Claude, and Google Gemini; per-provider model discovery; custom model IDs; cancellation; timeout/retry; API key validation; token usage |
 | Chat | Multiple conversations; rename/delete/pin/search; Markdown; syntax highlighting; tables; copy; regenerate; stop; per-chat system prompt; local history |
 | Multi-AI | Parallel independent streams; per-model cancel/retry; side-by-side results; model-generated Compare Answers with an explicit fact-checking disclaimer; save results to history |
@@ -35,24 +37,28 @@ Most AI work is fragmented across browser tabs and separate desktop apps. NOTCHO
 | Tasks | Pending/running/completed/failed/cancelled states; real background generation; cancel; result copy; local recovery after relaunch |
 | AI apps | Installed-app discovery through `NSWorkspace`; open/switch; custom app entries; curated suggestions |
 | Workflows | Sequential multi-model steps; per-step provider/model/prompt/system prompt; visual editor; run progress; results saved to history |
-| Settings | General, providers, shortcuts, appearance, privacy, about; persistent preferences; launch at login; custom model IDs |
+| Settings | Fully inside the notch surface: general, providers, shortcuts, appearance, privacy, about; persistent preferences; launch at login; custom model IDs |
 | Security | API keys only in Keychain; HTTPS only; no analytics; no hidden clipboard/screen/microphone monitoring; local state with owner-only permissions |
 
 ## Screenshots
 
-| Light chat | Dark chat |
+| System dark | System light |
 |---|---|
-| ![Light chat](Docs/Screenshots/chat-light.jpg) | ![Dark chat](Docs/Screenshots/chat-dark.jpg) |
+| ![Chat, system dark](Docs/Screenshots/chat-dark.jpg) | ![Chat, system light — the notch stays black](Docs/Screenshots/chat-light.jpg) |
 
 | Full workspace | Multi-AI |
 |---|---|
 | ![Workspace](Docs/Screenshots/workspace-dark.jpg) | ![Multi-AI](Docs/Screenshots/multi-ai.jpg) |
 
-| Provider settings | Light settings |
+| Provider settings | System light settings |
 |---|---|
-| ![Provider settings](Docs/Screenshots/settings-providers.jpg) | ![Light settings](Docs/Screenshots/settings-light.jpg) |
+| ![Provider settings](Docs/Screenshots/settings-providers.jpg) | ![System light settings](Docs/Screenshots/settings-light.jpg) |
 
-The screenshots come from the debug-only visual QA harness with fixture conversations and placeholder connected keys. See [TESTING.md](TESTING.md) and [QA.md](QA.md).
+| In-notch model picker | In-notch Handoff | In-notch workflow editor |
+|---|---|---|
+| ![Model picker](Docs/Screenshots/model-picker.jpg) | ![Handoff](Docs/Screenshots/handoff.jpg) | ![Workflow editor](Docs/Screenshots/workflow-editor.jpg) |
+
+The notch is deliberately black in every system appearance so it merges with the hardware cutout. The screenshots come from the debug-only visual QA harness with fixture conversations and placeholder connected keys. See [TESTING.md](TESTING.md) and [QA.md](QA.md).
 
 ## Requirements
 
@@ -160,7 +166,7 @@ make build   # debug build
 make test    # XCTest suite
 make app     # release .app bundle
 make dmg     # release .app bundle + DMG
-make qa      # debug visual QA: 15 screenshots
+make qa      # debug visual QA: 29 screenshots, including shape-growth frames
 ```
 
 Direct equivalents:
@@ -187,7 +193,7 @@ Read [PRIVACY.md](PRIVACY.md) for the detailed data map.
 
 ## Current status and honest limitations
 
-This repository contains a working native app, not a mockup. The core flows compile, the app launches, and the automated visual QA harness exercises compact, expanded, workspace, chat, onboarding, history, tasks, workflows, Multi-AI, and settings states in light and dark appearance.
+This repository contains a working native app, not a mockup. The core flows compile, the app launches, and the automated visual QA harness exercises compact, expanded, workspace, chat, onboarding, history, tasks, workflows, Multi-AI, settings, model picker, handoff, system prompt, screen capture, voice, and workflow editor states. It also captures the surface at intermediate expansion/collapse frames and validates the opaque-black, welded, centered shape pixel by pixel.
 
 Some capabilities require credentials or macOS TCC permissions that were not available in the build environment:
 

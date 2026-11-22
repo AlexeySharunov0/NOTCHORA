@@ -5,8 +5,8 @@ import SwiftUI
 struct ShortcutRecorderSheet: View {
     let model: AppModel
     let action: ShortcutAction
+    let onClose: () -> Void
 
-    @Environment(\.dismiss) private var dismiss
     @State private var combo: KeyCombo?
     @State private var message = "Press a key combination."
 
@@ -27,12 +27,11 @@ struct ShortcutRecorderSheet: View {
                 Spacer()
             }
             .padding(16)
-            .overlay(alignment: .bottom) { Hairline() }
 
             VStack(spacing: 14) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.nSurfaceSunken.opacity(0.55))
+                        .fill(Color.black)
                         .frame(height: 74)
                     if let combo {
                         Text(combo.displayString)
@@ -85,17 +84,17 @@ struct ShortcutRecorderSheet: View {
                         binding.isEnabled = false
                         model.updateShortcut(binding)
                     }
-                    dismiss()
+                    onClose()
                 }
                 .buttonStyle(NButtonStyle(variant: .ghost))
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Button("Apply") {
                     guard let combo else { return }
                     let enabled = model.settings.binding(for: action)?.isEnabled ?? true
                     model.updateShortcut(ShortcutBinding(action: action, combo: combo, isEnabled: enabled))
-                    dismiss()
+                    onClose()
                 }
                 .buttonStyle(NButtonStyle(variant: .primary))
                 .disabled(combo == nil)
@@ -104,8 +103,9 @@ struct ShortcutRecorderSheet: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 400, height: 340)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 560, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .onAppear {
             model.shortcutsRegistrationRequested?([])
         }

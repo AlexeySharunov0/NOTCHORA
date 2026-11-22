@@ -49,7 +49,8 @@ final class AppModel {
     var isHandoffPresented = false
     var isSystemPromptPresented = false
     var isScreenCapturePickerPresented = false
-    var isTransientUIPresented = false
+    var isModelPickerPresented = false
+    var presentationAnimationEnabled = true
 
     @ObservationIgnored var didBootstrap = false
     @ObservationIgnored var generationTasks: [UUID: Task<Void, Never>] = [:]
@@ -61,8 +62,7 @@ final class AppModel {
     @ObservationIgnored var previousFrontmostPID: pid_t?
     @ObservationIgnored var suppressAutoCollapseForQA = false
 
-    @ObservationIgnored var presentationDidChange: ((PanelPresentation) -> Void)?
-    @ObservationIgnored var openSettingsRequested: ((SettingsTab) -> Void)?
+    @ObservationIgnored var presentationDidChange: ((PanelPresentation, Bool) -> Void)?
     @ObservationIgnored var menuBarVisibilityChanged: ((Bool) -> Void)?
     @ObservationIgnored var shortcutsChanged: (([ShortcutBinding]) -> Void)?
     @ObservationIgnored var shortcutsRegistrationRequested: (([ShortcutBinding]) -> Void)?
@@ -162,7 +162,7 @@ final class AppModel {
 
     func setPresentation(_ newValue: PanelPresentation, animated: Bool = true) {
         guard presentation != newValue else {
-            if newValue != .hidden { presentationDidChange?(newValue) }
+            if newValue != .hidden { presentationDidChange?(newValue, animated) }
             return
         }
         if newValue == .expanded || newValue == .workspace {
@@ -177,9 +177,14 @@ final class AppModel {
                 voiceSession.cancel()
                 voicePresented = false
             }
+            isModelPickerPresented = false
+            isHandoffPresented = false
+            isSystemPromptPresented = false
+            isScreenCapturePickerPresented = false
         }
+        presentationAnimationEnabled = animated
         presentation = newValue
-        presentationDidChange?(newValue)
+        presentationDidChange?(newValue, animated)
         if animated {
             // The window controller owns the actual frame animation.
         }
@@ -188,7 +193,7 @@ final class AppModel {
     func togglePanel() {
         switch presentation {
         case .hidden, .compact:
-            setPresentation(.expanded)
+            setPresentation(route == .settings ? .workspace : .expanded)
         case .expanded, .workspace:
             setPresentation(.compact)
         }
@@ -204,7 +209,7 @@ final class AppModel {
             }
             route = .chat
         }
-        setPresentation(.expanded)
+        setPresentation(route == .settings ? .workspace : .expanded)
     }
 
     func openWorkspace(route newRoute: AppRoute? = nil) {
@@ -228,7 +233,9 @@ final class AppModel {
     }
 
     func requestSettings(_ tab: SettingsTab = .general) {
-        openSettingsRequested?(tab)
+        settingsTabRequest = tab
+        route = .settings
+        setPresentation(.workspace)
     }
 
     func applyAppearance() {

@@ -18,58 +18,11 @@ struct WorkspaceView: View {
             routeContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background {
-            ZStack {
-                NPanelBackground(transparent: model.settings.transparencyEnabled)
-                AmbientGlow(color: .nAccent)
-                    .opacity(0.45)
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: Metric.panelRadius, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: Metric.panelRadius, style: .continuous)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.16), Color.nHairline.opacity(0.6)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 0.8
-                )
-        }
+        .background(Color.black)
     }
 
     private var sidebar: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                NotchoraMark(size: 26)
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("NOTCHORA")
-                        .font(.system(size: 10.5, weight: .bold))
-                        .tracking(1.1)
-                        .foregroundStyle(Color.nTextPrimary)
-                    Text("AI CONTROL CENTER")
-                        .font(.system(size: 7.5, weight: .medium))
-                        .tracking(0.9)
-                        .foregroundStyle(Color.nTextTertiary)
-                }
-                Spacer()
-                Button {
-                    model.collapse()
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(Color.nTextSecondary)
-                        .frame(width: 22, height: 22)
-                        .background(Circle().fill(Color.primary.opacity(0.05)))
-                }
-                .buttonStyle(.borderless)
-                .help("Collapse to notch")
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
-
             Button {
                 _ = model.createConversation(navigate: true)
             } label: {
@@ -78,6 +31,7 @@ struct WorkspaceView: View {
             }
             .buttonStyle(NButtonStyle(variant: .primary, fullWidth: true))
             .padding(.horizontal, 12)
+            .padding(.top, 14)
 
             VStack(spacing: 2) {
                 navItem(.chat, symbol: "bubble.left.and.bubble.right")
@@ -120,10 +74,9 @@ struct WorkspaceView: View {
             }
             .padding(.horizontal, 8)
             .frame(height: 25)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(Color.primary.opacity(0.04))
-            )
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Color(white: 0.18)).frame(height: 0.7)
+            }
             .padding(.horizontal, 12)
             .padding(.bottom, 4)
 
@@ -170,10 +123,6 @@ struct WorkspaceView: View {
                         Image(systemName: "arrow.down.right.and.arrow.up.left")
                             .font(.system(size: 10, weight: .medium))
                             .frame(width: 26, height: 26)
-                            .background(
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .fill(Color.primary.opacity(0.05))
-                            )
                     }
                     .buttonStyle(.borderless)
                     .help("Compact panel")
@@ -184,10 +133,6 @@ struct WorkspaceView: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 9, weight: .semibold))
                             .frame(width: 26, height: 26)
-                            .background(
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .fill(Color.primary.opacity(0.05))
-                            )
                     }
                     .buttonStyle(.borderless)
                     .help("Close to notch")
@@ -197,10 +142,10 @@ struct WorkspaceView: View {
                 .padding(.bottom, 12)
             }
         }
-        .background(Color.nSurfaceSunken.opacity(0.32))
+        .background(Color.black)
         .overlay(alignment: .trailing) {
             Rectangle()
-                .fill(Color.nHairline.opacity(0.8))
+                .fill(Color(white: 0.14))
                 .frame(width: 0.7)
         }
     }
@@ -229,10 +174,11 @@ struct WorkspaceView: View {
             }
             .padding(.horizontal, 8)
             .frame(height: 29)
-            .background(
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(model.route == route ? Color.nAccentSoft.opacity(0.8) : .clear)
-            )
+            .overlay(alignment: .leading) {
+                if model.route == route {
+                    Capsule().fill(Color.nAccent).frame(width: 2, height: 13)
+                }
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -270,13 +216,6 @@ struct WorkspaceView: View {
             }
             .padding(.horizontal, 7)
             .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(
-                        conversation.id == model.selectedConversationID && model.route == .chat
-                            ? Color.primary.opacity(0.055) : .clear
-                    )
-            )
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -318,6 +257,8 @@ struct WorkspaceView: View {
             WorkflowsView(model: model)
         case .multiAI:
             MultiAIView(model: model)
+        case .settings:
+            SettingsRootView(model: model, embedded: true)
         }
     }
 }

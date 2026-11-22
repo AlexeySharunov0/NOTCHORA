@@ -30,23 +30,18 @@ struct ChatMessageRow: View {
     private var userMessage: some View {
         HStack(alignment: .top) {
             Spacer(minLength: 36)
-            VStack(alignment: .trailing, spacing: 8) {
+            VStack(alignment: .trailing, spacing: 7) {
+                Text("YOU")
+                    .font(.system(size: 8.5, weight: .semibold))
+                    .tracking(0.8)
+                    .foregroundStyle(Color.white.opacity(0.34))
                 if !message.attachments.isEmpty {
                     attachmentGrid(alignment: .trailing)
                 }
                 if !message.content.isEmpty {
                     MarkdownView(text: message.content)
                         .font(.nBody)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 9)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.nUserBubble)
-                        )
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .strokeBorder(Color.nAccent.opacity(0.12), lineWidth: 0.8)
-                        }
+                        .padding(.vertical, 2)
                 }
             }
             .frame(maxWidth: maxBubbleWidth, alignment: .trailing)
@@ -142,15 +137,7 @@ struct ChatMessageRow: View {
                 .buttonStyle(NButtonStyle(variant: .ghost, compact: true))
             }
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.nDanger.opacity(0.07))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.nDanger.opacity(0.18), lineWidth: 0.8)
-        }
+        .padding(.vertical, 6)
     }
 
     private var messageActions: some View {
@@ -253,10 +240,6 @@ struct ChatMessageRow: View {
                 .foregroundStyle(Color.nTextSecondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 5)
-                .background(
-                    Capsule(style: .continuous)
-                        .fill(Color.primary.opacity(0.045))
-                )
             }
         }
     }

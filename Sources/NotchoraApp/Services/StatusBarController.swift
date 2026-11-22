@@ -124,20 +124,7 @@ final class StatusBarController: NSObject, NSMenuDelegate {
     }
 
     @objc private func showAbout() {
-        let credits = NSAttributedString(
-            string: "Your AI. One notch away.\n\nA native AI control center for macOS.\nBuilt with SwiftUI, AppKit, and Swift Concurrency.",
-            attributes: [
-                .font: NSFont.systemFont(ofSize: 11),
-                .foregroundColor: NSColor.secondaryLabelColor
-            ]
-        )
-        NSApp.orderFrontStandardAboutPanel(options: [
-            .applicationName: "NOTCHORA",
-            .applicationVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0",
-            .version: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1",
-            .credits: credits
-        ])
-        NSApp.activate(ignoringOtherApps: true)
+        model.requestSettings(.about)
     }
 
     @objc private func quit() {

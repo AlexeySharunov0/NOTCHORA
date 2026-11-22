@@ -74,7 +74,7 @@ struct HistoryView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.nTextSecondary)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.primary.opacity(0.045)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
             .help("Back to chat")
@@ -97,8 +97,7 @@ struct HistoryView: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
+        .background(Color.black)
     }
 
     private var filterMenu: some View {
@@ -128,14 +127,6 @@ struct HistoryView: View {
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(isFiltering ? Color.nAccent : Color.nTextSecondary)
                 .frame(width: 30, height: 30)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(isFiltering ? Color.nAccentSoft : Color.primary.opacity(0.035))
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .strokeBorder(Color.nHairline, lineWidth: 0.7)
-                }
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)

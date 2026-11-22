@@ -75,10 +75,7 @@ struct ProviderMiniRow: View {
             }
             .padding(.horizontal, 10)
             .frame(height: 42)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(hovered ? Color.primary.opacity(0.06) : Color.primary.opacity(0.025))
-            )
+            .background(Color.black)
             .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)

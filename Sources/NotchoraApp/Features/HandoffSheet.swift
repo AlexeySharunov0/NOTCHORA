@@ -3,8 +3,7 @@ import SwiftUI
 
 struct HandoffSheet: View {
     let model: AppModel
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
 
     @State private var scope: HandoffScope = .fullConversation
     @State private var selectedIDs: Set<UUID> = []
@@ -51,8 +50,9 @@ struct HandoffSheet: View {
 
             footer
         }
-        .frame(width: 540, height: 610)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 760)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .onAppear(perform: initialize)
     }
 
@@ -76,32 +76,27 @@ struct HandoffSheet: View {
             }
             Spacer()
             Button {
-                dismiss()
+                onClose()
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.6))
                     .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.primary.opacity(0.05)))
             }
             .buttonStyle(.borderless)
         }
         .padding(.horizontal, 16)
         .padding(.top, 14)
         .padding(.bottom, 10)
-        .overlay(alignment: .bottom) { Hairline() }
     }
 
     private var scopeSection: some View {
         VStack(alignment: .leading, spacing: 7) {
             SectionLabel(text: "What to transfer")
-            Picker("Scope", selection: $scope) {
-                ForEach(HandoffScope.allCases) { scope in
-                    Text(scope.displayName).tag(scope)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            NotchSegmentedPicker(
+                selection: $scope,
+                options: HandoffScope.allCases.map { ($0, $0.displayName) }
+            )
             .onChange(of: scope) { _, newValue in
                 if newValue == .selectedMessages && selectedIDs.isEmpty {
                     selectedIDs = Set(conversation?.messages.map(\.id) ?? [])
@@ -173,7 +168,7 @@ struct HandoffSheet: View {
             .padding(4)
             .background(
                 RoundedRectangle(cornerRadius: 9, style: .continuous)
-                    .fill(Color.primary.opacity(0.025))
+                    .fill(Color.black)
             )
         }
     }
@@ -206,25 +201,15 @@ struct HandoffSheet: View {
                     self.model.requestSettings(.providers)
                 }
             } label: {
-                HStack(spacing: 8) {
-                    ProviderGlyph(provider: effectiveTarget.providerID, size: 20)
-                    Text(model.catalog.model(for: effectiveTarget).displayName)
+                HStack(spacing: 6) {
+                    Text("\(effectiveTarget.providerID.shortName) · \(model.catalog.model(for: effectiveTarget).displayName)  ⌄")
                         .font(.nSmallMedium)
                         .foregroundStyle(Color.nTextPrimary)
-                    Spacer()
-                    if !model.hasAPIKey(effectiveTarget.providerID) {
-                        TagView(text: "No key", symbol: "key.slash", tint: .nWarning)
-                    }
-                    Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 8, weight: .medium))
-                        .foregroundStyle(Color.nTextTertiary)
+                        .lineLimit(1)
                 }
                 .padding(.horizontal, 9)
-                .frame(height: 36)
-                .background(
-                    RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(Color.primary.opacity(0.035))
-                )
+                .frame(width: 300, height: 36, alignment: .leading)
+                .background(Color.black)
                 .overlay {
                     RoundedRectangle(cornerRadius: 9, style: .continuous)
                         .strokeBorder(Color.nHairline, lineWidth: 0.8)
@@ -232,6 +217,7 @@ struct HandoffSheet: View {
             }
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
+            .fixedSize()
 
             Text("The receiving model will not be told that it wrote the earlier assistant messages.")
                 .font(.nCaptionRegular)
@@ -289,7 +275,7 @@ struct HandoffSheet: View {
                 .frame(height: 150)
                 .background(
                     RoundedRectangle(cornerRadius: 9, style: .continuous)
-                        .fill(Color.nSurfaceSunken.opacity(0.55))
+                        .fill(Color.black)
                 )
                 .overlay {
                     RoundedRectangle(cornerRadius: 9, style: .continuous)
@@ -328,7 +314,7 @@ struct HandoffSheet: View {
                 .font(.nCaptionRegular)
                 .foregroundStyle(Color.nTextTertiary)
             Spacer()
-            Button("Cancel") { dismiss() }
+            Button("Cancel") { onClose() }
                 .buttonStyle(NButtonStyle(variant: .ghost))
             Button("Hand off") {
                 perform()
@@ -412,6 +398,18 @@ struct HandoffSheet: View {
         )
         draft.contextText = contextText
         model.performHandoff(draft, autoContinue: autoContinue)
-        dismiss()
+        onClose()
+    }
+}
+
+
+struct HandoffOverlay: View {
+    let model: AppModel
+
+    var body: some View {
+        HandoffSheet(model: model) {
+            model.isHandoffPresented = false
+        }
+        .background(Color.black)
     }
 }

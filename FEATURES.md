@@ -9,18 +9,20 @@ This is the functional inventory of the current build. “Implemented” means t
 - Fallback compact pill on non-notched displays.
 - Click to expand.
 - Optional hover expansion with delay.
-- Smooth animated expansion and collapse.
-- Expanded panel with history, tasks, apps, Multi-AI, workspace, and collapse controls.
+- One continuous opaque-black surface that grows downward and outward from the physical notch.
+- No material, blur, glass, border, drop shadow, or separate floating workspace window.
+- Spring shape animation with content fading in after expansion begins.
+- Expanded surface with history, tasks, apps, Multi-AI, workspace, and collapse controls.
 - Full workspace with sidebar, conversation list, route navigation, and background generation.
 - Multi-display anchoring using an active-screen / built-in / main preference.
 - `canJoinAllSpaces`, `fullScreenAuxiliary`, `stationary`, and `.statusBar` window behavior.
 - Save/restore focus of the previously frontmost app.
 - Idle activity indicator for running tasks and streaming.
-- Live task count in compact state.
+- Compact activity indicator for streaming and running tasks; no task counter is drawn on the hardware notch.
 - Escape / hide shortcut / click-outside collapse.
 - Reduce Motion and in-app animation preference.
-- Light, dark, and system appearance.
-- Native vibrancy and translucent surfaces with an opaque fallback.
+- System menus and AppKit controls follow the system/light/dark preference.
+- The notch surface itself is always opaque black so it merges with the hardware cutout.
 - App icon generated from a vector draw script.
 
 ## AI providers
@@ -255,12 +257,12 @@ This is the functional inventory of the current build. “Implemented” means t
 
 ### Appearance
 
-- System/light/dark.
-- Translucency.
+- System/light/dark for system menus and AppKit controls.
+- Fixed opaque-black notch surface.
 - Interface density.
 - Panel animation preference.
 - Live preview.
-- Appearance applied to panel and settings.
+- Appearance applied without changing the notch material.
 
 ### Privacy
 
@@ -279,6 +281,13 @@ This is the functional inventory of the current build. “Implemented” means t
 - Native/private/direct.
 - Product description.
 - No analytics statement.
+
+## Single-surface UI
+
+- Chat, history, tasks, apps, workflows, Multi-AI, settings, and the model picker render inside the notch.
+- Handoff, system-prompt, screen-capture, voice, selection, and workflow-editor surfaces are in-notch overlays, not sheets or separate windows.
+- Settings opened from the status menu, Cmd+, or the app menu expands the same notch workspace.
+- The only external macOS panels are transient menus and the explicit app/file picker required to add an app.
 
 ## Security and persistence
 
@@ -303,8 +312,9 @@ This is the functional inventory of the current build. “Implemented” means t
 - Keychain abstraction tests.
 - Task/workflow tests.
 - Settings persistence tests.
-- Debug visual QA harness with 15 screenshots.
-- Light/dark checks.
+- Debug visual QA harness with 29 screenshots, including expansion/collapse frames and overlays.
+- Pixel validation of the opaque-black, welded, centered notch shape.
+- Reduced-motion shape checks.
 - Reduced Motion handling.
 - Retina 2× capture.
 - App bundle build script.

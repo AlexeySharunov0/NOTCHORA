@@ -127,27 +127,27 @@ The debug-only `QAHarness` is activated by `NOTCHORA_QA=1`. It:
 1. clears the in-memory provider keys;
 2. captures the compact idle notch and onboarding state;
 3. injects a fixture conversation and placeholder keys in an in-memory Keychain;
-4. switches appearance and captures expanded chat in dark/light;
-5. expands to the full workspace and captures dark/light;
-6. navigates to History, Tasks, Workflows, and Multi-AI;
-7. opens the real custom Settings window and captures General, Providers, Privacy, and a light-mode view;
-8. terminates with a success code;
-9. writes 15 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
+4. captures expanded chat and workspace in system dark and system light (the notch surface remains black);
+5. navigates to History, Tasks, Workflows, and Multi-AI;
+6. opens Settings inside the notch workspace and captures General, Providers, and Privacy;
+7. opens the model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor as in-notch overlays;
+8. captures intermediate expansion and collapse frames of the actual surface;
+9. terminates with a success code;
+10. writes 29 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
 
 The harness uses `NSView.cacheDisplay` so it does not need Screen Recording permission. It is compiled out of release builds. It never touches the real Keychain or Application Support because it uses an in-memory key store and `NOTCHORA_STATE_PATH=build/qa-state.json`.
 
-The script fails if any expected screenshot is missing or empty, if global shortcut registration reported an error, or if the composer did not receive keyboard focus.
+The script fails if any expected screenshot is missing or empty, if global shortcut registration reported an error, if the composer did not receive keyboard focus, or if the notch-shape pixel validator finds a non-black edge, a surface that is not centered while growing, or a rectangular bottom corner.
 
 ### Visual QA observations
 
-- The compact rail merges with the physical notch and exposes only a small brand mark and activity indicator.
-- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 548×664 points.
-- The workspace was inspected at 1120×722 points in both dark and light modes.
-- Native materials, hairline separators, and accent usage were reviewed.
-- Light mode exposed a rendering issue where icon-only `.plain` SwiftUI buttons kept a white glyph. This was fixed by using `.borderless` for icon-only controls and rebuilding the hosting view on appearance changes.
-- Provider model picker labels were initially clipped under a menu button style; the picker was replaced with a styled popover with full model names and custom model access.
+- The compact surface is a black extension around the physical notch with a tiny activity mark; it contains no logo or task counter.
+- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 620×720 points.
+- The workspace was inspected at 1180×780 points.
+- The surface was captured at 70 ms, 170 ms, 350 ms, and settled during expansion, and at 80/200/400 ms during collapse. A Swift validator confirms that every sampled surface edge is opaque black, the top edge is welded, the growing shape stays horizontally centered, and the lower corners are transparent.
+- Settings, model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor were verified as in-notch surfaces rather than separate windows.
+- The former translucent card/material styling was removed; content now sits directly on opaque black.
 - Duplicate keys and raw Markdown in previews were found and fixed.
-- Settings was initially unreachable through the SwiftUI Settings scene selector; a dedicated `SettingsWindowController` now opens reliably from the status menu and Cmd+,.
 
 See [QA.md](QA.md) for the screenshot index.
 
@@ -157,12 +157,18 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 
 ### Window behavior
 
-- [ ] Compact panel appears around the notch.
+- [ ] The compact black surface appears welded to the physical notch, with no visible seam or border.
+- [ ] Expanding from compact shows one black shape growing down and outward; no separate rectangle appears under the notch.
+- [ ] The expanded surface is uniformly opaque black; there is no blur, glass, gray fill, or outer stroke.
+- [ ] Content fades in after the black shape has started growing.
+- [ ] Collapsing returns the same black shape to the compact notch size.
 - [ ] Click compact → expanded.
 - [ ] Click outside → collapse; previous app regains focus.
 - [ ] Hover expansion works when enabled.
 - [ ] Escape collapses.
-- [ ] Full workspace expands and collapses without losing conversation.
+- [ ] Full workspace uses the same welded surface, not a second floating window.
+- [ ] Settings opens inside the notch workspace from Cmd+, the app menu, and the status menu.
+- [ ] Model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor fill the in-notch surface rather than opening sheets/popovers.
 - [ ] Fallback pill appears on a Mac or display without a notch.
 - [ ] Panel appears on the display under the pointer.
 - [ ] Moving the pointer to another display and invoking the shortcut repositions the panel.
@@ -261,13 +267,14 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 The development machine was a notched MacBook running macOS 26.6. The following were verified directly:
 
 - app builds and launches through LaunchServices;
-- compact, expanded, and workspace window frames;
-- appearance rebuilding;
+- compact, expanded, and workspace surface sizes and top-edge anchoring;
+- opaque black shape growth and collapse frames;
+- appearance rebuilding while the notch stays black;
 - all visual states in the screenshot harness;
 - local state writing;
 - global hotkey registration success (runtime QA report: `shortcutErrors: none`);
 - composer focus after expansion (runtime QA report: `firstResponder: NSTextView`);
-- settings window opening and tab switching;
+- settings opening inside the notch workspace and tab switching;
 - 55 unit tests.
 
 The following require resources not available in the build environment and are documented as verification items, not claimed as live-tested:

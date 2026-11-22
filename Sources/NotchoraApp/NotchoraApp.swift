@@ -6,10 +6,14 @@ struct NotchoraApp: App {
 
     var body: some Scene {
         Settings {
-            SettingsRootView(model: AppEnvironment.shared.model)
-                .frame(minWidth: 780, minHeight: 560)
+            EmptyView()
         }
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About NOTCHORA") {
+                    AppEnvironment.shared.model.requestSettings(.about)
+                }
+            }
             CommandGroup(replacing: .appSettings) {
                 Button("Settings…") {
                     AppEnvironment.shared.model.requestSettings(.general)

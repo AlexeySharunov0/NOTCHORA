@@ -55,7 +55,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 - The package is a SwiftPM executable, not a hand-written `.xcodeproj` with a UI-test target.
 - UI coverage is provided by:
   - a debug screenshot harness that launches the real app and drives actual presentation/routes/settings;
-  - 15 captured states in light and dark;
+  - 29 captured states, including intermediate expansion/collapse frames and in-notch overlays;
   - a human manual QA matrix.
 - This is not equivalent to automated click/keyboard UI tests. It is documented rather than presented as XCUITest.
 
@@ -69,24 +69,28 @@ These paths are implemented but could not be exercised end-to-end on the build m
 
 ### Physical notch
 
-- A window cannot draw over the physical camera cutout or change its geometry.
-- NOTCHORA creates a black rail around the cutout and hides the camera area visually; it does not access the camera.
-- On non-notched Macs or external displays, the app falls back to a floating pill.
+- A window cannot draw inside the physical camera cutout or change its geometry.
+- NOTCHORA creates a pure-black surface that extends from the cutout. The hardware notch and the software surface share the same black fill, so the cutout visually becomes the compact shape.
+- The surface is drawn by a transparent window container; only the area outside the rounded black shape is transparent. The black surface itself is fully opaque.
+- On non-notched Macs or external displays, the app falls back to a black pill with rounded top and bottom corners below the menu bar.
 - The notch-width estimate depends on `NSScreen.auxiliaryTopLeftArea` / `auxiliaryTopRightArea`; unusual display configurations may produce a slightly different width.
+- The menu-bar area under the expanded surface is intentionally covered; side menu-bar items can be hidden while the surface is open.
 
 ### Focus and activation
 
 - Text fields and VoiceOver are most reliable when the app is active.
 - NOTCHORA activates while the panel is open and restores the previous app when NOTCHORA is still frontmost on collapse.
 - Clicking another app collapses the panel through `windowDidResignKey`.
-- A transient popover or sheet suppresses automatic collapse, but unusual focus flows can still behave differently from a standard window.
-- A plain SwiftUI `.plain` icon button previously rendered white in light appearance; icon-only controls now use `.borderless`. Any newly added icon-only controls should follow this pattern.
+- All modal UI opens inside the panel; there are no app sheets or model-picker popovers. Native menus and `NSOpenPanel` remain system windows.
+- The notch surface is always black. The appearance preference affects system menus and AppKit controls, not the surface color.
+- Increase Contrast can make native control outlines more prominent, but the surface remains opaque black.
 
-### macOS materials
+### Opaque black surface
 
-- The target is macOS 14, so the UI uses `NSVisualEffectView` materials, vibrancy, and translucent overlays rather than macOS 26 Liquid Glass APIs.
-- When “Translucent materials” is off, surfaces use opaque colors.
-- Increased contrast and Reduce Transparency can change material rendering.
+- The surface uses `Color.black` (sRGB 0,0,0) to match the hardware cutout as closely as the display allows.
+- The window container is non-opaque only so the rounded lower corners can reveal the desktop. The visible shape has alpha 255.
+- There is no material, vibrancy, blur, glassmorphism, shadow, or border on the notch surface.
+- At the time of writing, QA validates the shape at intermediate expansion/collapse sizes with a pixel sampler. It cannot compare the exact black level of the physical camera housing under every ambient-light condition.
 
 ### Provider APIs
 
@@ -167,7 +171,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 ### Apple Intelligence / Liquid Glass
 
 - No Apple Intelligence APIs are used; providers are OpenAI, Anthropic, and Google.
-- No Liquid Glass API is used because the deployment target is macOS 14 and the design relies on native materials available there.
+- No Liquid Glass API is used. The notch surface intentionally stays opaque black to merge with the hardware cutout.
 
 ## Intentional scope boundaries
 

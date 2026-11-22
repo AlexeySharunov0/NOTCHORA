@@ -10,6 +10,7 @@ final class NotchEnvironment {
     var topRailHeight: CGFloat = 38
     var notchWidth: CGFloat = 200
     var screenWidth: CGFloat = 1440
+    var screenHeight: CGFloat = 900
     var screenName = "Display"
     var isFallback = false
 
@@ -27,6 +28,7 @@ final class NotchEnvironment {
         notchWidth = detectedWidth
         topRailHeight = max(screen.safeAreaInsets.top, hasPhysicalNotch ? 37 : 0)
         screenWidth = screen.frame.width
+        screenHeight = screen.frame.height
         screenName = screen.localizedName
     }
 }
@@ -35,8 +37,8 @@ final class NotchEnvironment {
 enum NotchGeometry {
     static let compactHeightWithNotch: CGFloat = 41
     static let fallbackCompactHeight: CGFloat = 34
-    static let expandedSize = CGSize(width: 548, height: 664)
-    static let workspaceSize = CGSize(width: 1120, height: 722)
+    static let expandedSize = CGSize(width: 620, height: 720)
+    static let workspaceSize = CGSize(width: 1180, height: 780)
 
     static func preferredScreen(settings: SettingsStore) -> NSScreen {
         let screens = NSScreen.screens
@@ -79,18 +81,48 @@ enum NotchGeometry {
         case .compact:
             let width = compactWidth(on: screen)
             let height = notched ? compactHeightWithNotch : fallbackCompactHeight
-            let top = notched ? screen.frame.maxY + 1 : visible.maxY - 4
+            let top = notched ? screen.frame.maxY : visible.maxY - 4
             return centeredFrame(width: width, height: height, top: top, screen: screen)
         case .expanded:
-            let width = min(expandedSize.width, screen.frame.width - 24)
-            let height = min(expandedSize.height, visible.height - 18)
+            let width = min(expandedSize.width, screen.frame.width - 20)
+            let height = min(expandedSize.height, screen.frame.height - 20)
             let top = notched ? screen.frame.maxY : visible.maxY - 4
             return centeredFrame(width: width, height: height, top: top, screen: screen)
         case .workspace:
-            let width = min(workspaceSize.width, screen.frame.width - 32)
-            let height = min(workspaceSize.height, visible.height - 16)
-            let top = visible.maxY - 6
+            let width = min(workspaceSize.width, screen.frame.width - 24)
+            let height = min(workspaceSize.height, screen.frame.height - 24)
+            let top = notched ? screen.frame.maxY : visible.maxY - 4
             return centeredFrame(width: width, height: height, top: top, screen: screen)
+        }
+    }
+
+    static func surfaceSize(
+        for presentation: PanelPresentation,
+        environment: NotchEnvironment
+    ) -> CGSize {
+        switch presentation {
+        case .hidden:
+            return .zero
+        case .compact:
+            let extra: CGFloat = environment.hasPhysicalNotch ? 80 : 68
+            let width = min(
+                max(environment.notchWidth + extra, 250),
+                environment.screenWidth - 24
+            )
+            return CGSize(
+                width: width,
+                height: environment.hasPhysicalNotch ? compactHeightWithNotch : fallbackCompactHeight
+            )
+        case .expanded:
+            return CGSize(
+                width: min(expandedSize.width, environment.screenWidth - 20),
+                height: min(expandedSize.height, environment.screenHeight - 20)
+            )
+        case .workspace:
+            return CGSize(
+                width: min(workspaceSize.width, environment.screenWidth - 24),
+                height: min(workspaceSize.height, environment.screenHeight - 24)
+            )
         }
     }
 
@@ -101,8 +133,8 @@ enum NotchGeometry {
         } else {
             notchedWidth = 190
         }
-        let extra: CGFloat = isNotched(screen) ? 92 : 68
-        return min(max(notchedWidth + extra, 260), screen.frame.width - 24)
+        let extra: CGFloat = isNotched(screen) ? 80 : 68
+        return min(max(notchedWidth + extra, 250), screen.frame.width - 24)
     }
 
     private static func centeredFrame(

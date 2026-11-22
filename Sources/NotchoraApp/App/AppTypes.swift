@@ -16,6 +16,7 @@ enum AppRoute: String, CaseIterable, Hashable, Identifiable, Sendable {
     case apps
     case workflows
     case multiAI
+    case settings
 
     var id: String { rawValue }
 
@@ -27,6 +28,7 @@ enum AppRoute: String, CaseIterable, Hashable, Identifiable, Sendable {
         case .apps: "Apps"
         case .workflows: "Workflows"
         case .multiAI: "Multi-AI"
+        case .settings: "Settings"
         }
     }
 
@@ -38,6 +40,7 @@ enum AppRoute: String, CaseIterable, Hashable, Identifiable, Sendable {
         case .apps: "square.grid.2x2"
         case .workflows: "point.3.connected.trianglepath.dotted"
         case .multiAI: "square.split.2x2"
+        case .settings: "gearshape"
         }
     }
 }

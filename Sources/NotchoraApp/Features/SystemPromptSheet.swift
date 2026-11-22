@@ -2,8 +2,7 @@ import SwiftUI
 
 struct SystemPromptSheet: View {
     let model: AppModel
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
     @State private var prompt = ""
 
     var body: some View {
@@ -27,18 +26,16 @@ struct SystemPromptSheet: View {
                 }
                 Spacer()
                 Button {
-                    dismiss()
+                    onClose()
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(Color.nTextTertiary)
+                        .foregroundStyle(Color.white.opacity(0.6))
                         .frame(width: 24, height: 24)
-                        .background(Circle().fill(Color.primary.opacity(0.05)))
                 }
                 .buttonStyle(.borderless)
             }
             .padding(16)
-            .overlay(alignment: .bottom) { Hairline() }
 
             VStack(alignment: .leading, spacing: 9) {
                 TextEditor(text: $prompt)
@@ -49,7 +46,7 @@ struct SystemPromptSheet: View {
                     .frame(height: 200)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.6))
+                            .fill(Color.black)
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -79,11 +76,11 @@ struct SystemPromptSheet: View {
                 }
                 .buttonStyle(NButtonStyle(variant: .ghost))
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Button("Save") {
                     model.updateSystemPrompt(prompt)
-                    dismiss()
+                    onClose()
                 }
                 .buttonStyle(NButtonStyle(variant: .primary))
             }
@@ -91,10 +88,23 @@ struct SystemPromptSheet: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 500, height: 430)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 680)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .onAppear {
             prompt = model.currentConversation?.systemPrompt ?? ""
         }
+    }
+}
+
+
+struct SystemPromptOverlay: View {
+    let model: AppModel
+
+    var body: some View {
+        SystemPromptSheet(model: model) {
+            model.isSystemPromptPresented = false
+        }
+        .background(Color.black)
     }
 }

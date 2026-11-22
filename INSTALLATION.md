@@ -61,7 +61,7 @@ On first launch, NOTCHORA expands the notch panel and shows the welcome screen.
 3. Paste a key into the provider card.
 4. Click **Save & Verify**.
 5. Optionally click **Refresh Models**.
-6. Close Settings and click the notch to return to chat.
+6. Use the workspace sidebar **Chat** item (or press Escape) to return to the conversation.
 
 Keys are saved in Keychain only after verification succeeds. Choose **Save** instead of **Save & Verify** if you want to store a key without a network check.
 
@@ -160,7 +160,7 @@ Change them in **Settings → Shortcuts**. Press a new combination in the record
 
 ```text
 ~/Library/Application Support/NOTCHORA/state.json   # chats, tasks, workflows, launcher entries
-~/Library/Preferences/com.notchora.app.plist        # non-secret preferences and window frame
+~/Library/Preferences/com.notchora.app.plist        # non-secret preferences and onboarding state
 Keychain service: com.notchora.app.credentials      # API keys
 ```
 
@@ -193,7 +193,7 @@ Delete data with **Settings → Privacy**:
 | Selected text unavailable | Grant Accessibility or use Clipboard fallback |
 | Launch at login unavailable | Install the app in `/Applications` and approve the login item |
 | Shortcut does nothing | Check Settings → Shortcuts for a registration conflict |
-| Settings window not visible | Use menu bar item → Settings; the window opens as a normal resizable window |
+| Settings not visible | Press Cmd+, or use menu bar item → Settings; Settings opens inside the notch workspace |
 
 ## Build notes
 

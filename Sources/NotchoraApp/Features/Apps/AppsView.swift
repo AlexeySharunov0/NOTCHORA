@@ -59,7 +59,7 @@ struct AppsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.nTextSecondary)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.primary.opacity(0.045)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
 
@@ -97,8 +97,7 @@ struct AppsView: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
+        .background(Color.black)
     }
 
     private func appCard(_ entry: LauncherEntry) -> some View {
@@ -158,14 +157,7 @@ struct AppsView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.primary.opacity(0.028))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.nHairline.opacity(0.8), lineWidth: 0.7)
-        }
+        .padding(.vertical, 3)
     }
 
     private var addCard: some View {
@@ -181,17 +173,7 @@ struct AppsView: View {
                     .foregroundStyle(Color.nTextSecondary)
             }
             .frame(maxWidth: .infinity, minHeight: 86)
-            .background(
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(Color.primary.opacity(0.012))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .strokeBorder(
-                        Color.nHairline,
-                        style: StrokeStyle(lineWidth: 0.8, dash: [4, 3])
-                    )
-            }
+
         }
         .buttonStyle(.plain)
     }

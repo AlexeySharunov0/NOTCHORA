@@ -4,6 +4,7 @@ import SwiftUI
 
 struct SettingsRootView: View {
     let model: AppModel
+    var embedded: Bool = true
 
     @State private var selection: SettingsTab = .general
 
@@ -28,38 +29,48 @@ struct SettingsRootView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .background {
-            ZStack {
-                NPanelBackground(transparent: model.settings.transparencyEnabled)
-                AmbientGlow(color: .nAccent).opacity(0.35)
-            }
-            .ignoresSafeArea()
-        }
+        .background(Color.black)
         .tint(Color.nAccent)
-        .preferredColorScheme(model.settings.appearance.colorScheme)
-        .frame(minWidth: 780, minHeight: 560)
+        .preferredColorScheme(.dark)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear(perform: applyRequestedTab)
         .onChange(of: model.settingsTabRequest) { _, _ in applyRequestedTab() }
     }
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 8) {
-                NotchoraMark(size: 28)
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("NOTCHORA")
-                        .font(.system(size: 10, weight: .bold))
-                        .tracking(1.1)
-                        .foregroundStyle(Color.nTextPrimary)
+            if embedded {
+                HStack(spacing: 7) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color.nTextSecondary)
                     Text("SETTINGS")
-                        .font(.system(size: 7.5, weight: .medium))
+                        .font(.system(size: 8.5, weight: .semibold))
                         .tracking(1.0)
-                        .foregroundStyle(Color.nTextTertiary)
+                        .foregroundStyle(Color.nTextSecondary)
+                    Spacer()
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                .padding(.bottom, 14)
+            } else {
+                HStack(spacing: 8) {
+                    NotchoraMark(size: 28)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("NOTCHORA")
+                            .font(.system(size: 10, weight: .bold))
+                            .tracking(1.1)
+                            .foregroundStyle(Color.nTextPrimary)
+                        Text("SETTINGS")
+                            .font(.system(size: 7.5, weight: .medium))
+                            .tracking(1.0)
+                            .foregroundStyle(Color.nTextTertiary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 18)
+                .padding(.bottom, 16)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 18)
-            .padding(.bottom, 16)
 
             VStack(spacing: 2) {
                 ForEach(SettingsTab.allCases) { tab in
@@ -78,10 +89,6 @@ struct SettingsRootView: View {
                         }
                         .padding(.horizontal, 9)
                         .frame(height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(selection == tab ? Color.nAccentSoft.opacity(0.9) : .clear)
-                        )
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
@@ -103,7 +110,7 @@ struct SettingsRootView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .background(Color.nSurfaceSunken.opacity(0.32))
+        .background(Color.black)
     }
 
     private var pageHeader: some View {
@@ -177,14 +184,7 @@ private struct SettingsSection<Content: View>: View {
             VStack(spacing: 0) {
                 content
             }
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.nSurfaceRaised.opacity(0.45))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.nHairline, lineWidth: 0.8)
-            }
+            .background(Color.black)
             if let footer {
                 Text(footer)
                     .font(.nCaptionRegular)
@@ -268,13 +268,31 @@ private struct GeneralSettingsView: View {
                             .foregroundStyle(Color.nTextTertiary)
                     }
                     Spacer()
-                    Picker("", selection: $settings.defaultBehavior) {
+                    Menu {
                         ForEach(DefaultBehavior.allCases, id: \.self) { behavior in
-                            Text(behavior.displayName).tag(behavior)
+                            Button {
+                                settings.defaultBehavior = behavior
+                            } label: {
+                                if settings.defaultBehavior == behavior {
+                                    Label(behavior.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(behavior.displayName)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(settings.defaultBehavior.displayName)
+                                .font(.nSmall)
+                                .foregroundStyle(Color.nTextSecondary)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 7, weight: .semibold))
+                                .foregroundStyle(Color.nTextTertiary)
                         }
                     }
-                    .labelsHidden()
-                    .frame(width: 170)
+                    .menuStyle(.borderlessButton)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
                 }
                 Divider().padding(.leading, 12)
                 SettingsRow {
@@ -353,13 +371,31 @@ private struct GeneralSettingsView: View {
                     Text("Show panel on")
                         .font(.nSmall)
                     Spacer()
-                    Picker("", selection: $settings.displayPreference) {
+                    Menu {
                         ForEach(DisplayPreference.allCases, id: \.self) { preference in
-                            Text(preference.displayName).tag(preference)
+                            Button {
+                                settings.displayPreference = preference
+                            } label: {
+                                if settings.displayPreference == preference {
+                                    Label(preference.displayName, systemImage: "checkmark")
+                                } else {
+                                    Text(preference.displayName)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(settings.displayPreference.displayName)
+                                .font(.nSmall)
+                                .foregroundStyle(Color.nTextSecondary)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 7, weight: .semibold))
+                                .foregroundStyle(Color.nTextTertiary)
                         }
                     }
-                    .labelsHidden()
-                    .frame(width: 180)
+                    .menuStyle(.borderlessButton)
+                    .menuIndicator(.hidden)
+                    .fixedSize()
                 }
             }
 
@@ -431,7 +467,7 @@ private struct ProviderSettingsCard: View {
 
             HStack(spacing: 7) {
                 SecureField("Paste a new \(provider.displayName) API key", text: $draftKey)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(NotchTextFieldStyle())
                     .font(.system(size: 11.5, design: .monospaced))
                 Button("Save & Verify") {
                     save(verify: true)
@@ -521,7 +557,7 @@ private struct ProviderSettingsCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
                         TextField("Exact model ID, e.g. gpt-4.1-mini", text: $customModelID)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(NotchTextFieldStyle())
                             .font(.system(size: 11, design: .monospaced))
                         Button("Add Model") {
                             model.addCustomModel(customModelID, provider: provider)
@@ -555,24 +591,9 @@ private struct ProviderSettingsCard: View {
                     }
                 }
                 .padding(9)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.nSurfaceSunken.opacity(0.45))
-                )
             }
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.nSurfaceRaised.opacity(0.48))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(
-                    model.hasAPIKey(provider) ? Color.providerTint(provider).opacity(0.24) : Color.nHairline,
-                    lineWidth: 0.8
-                )
-        }
+        .padding(.vertical, 12)
         .alert("Remove \(provider.displayName) key?", isPresented: $deleteKeyPresented) {
             Button("Cancel", role: .cancel) {}
             Button("Remove", role: .destructive) {
@@ -622,8 +643,9 @@ private struct ShortcutsSettingsView: View {
     var body: some View {
         @Bindable var settings = model.settings
 
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(spacing: 1) {
+        ZStack {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(spacing: 1) {
                 ForEach(ShortcutAction.allCases) { action in
                     if let binding = settings.binding(for: action) {
                         HStack(spacing: 9) {
@@ -660,14 +682,6 @@ private struct ShortcutsSettingsView: View {
                                     .foregroundStyle(Color.nTextSecondary)
                                     .padding(.horizontal, 8)
                                     .frame(height: 24)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                            .fill(Color.primary.opacity(0.045))
-                                    )
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                            .strokeBorder(Color.nHairline, lineWidth: 0.7)
-                                    }
                             }
                             .buttonStyle(.plain)
                             .disabled(!binding.isEnabled)
@@ -680,15 +694,6 @@ private struct ShortcutsSettingsView: View {
                     }
                 }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.nSurfaceRaised.opacity(0.45))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.nHairline, lineWidth: 0.8)
-            }
-
             HStack {
                 Text("Shortcuts are registered with the macOS hot key system. Conflicting combinations are reported per action.")
                     .font(.nCaptionRegular)
@@ -699,9 +704,15 @@ private struct ShortcutsSettingsView: View {
                 }
                 .buttonStyle(NButtonStyle(variant: .ghost, compact: true))
             }
-        }
-        .sheet(item: $recording) { action in
-            ShortcutRecorderSheet(model: model, action: action)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+
+            if let action = recording {
+                ShortcutRecorderSheet(model: model, action: action) {
+                    recording = nil
+                }
+                .zIndex(5)
+            }
         }
     }
 }
@@ -718,13 +729,10 @@ private struct AppearanceSettingsView: View {
                     Text("Appearance")
                         .font(.nSmall)
                     Spacer()
-                    Picker("", selection: $settings.appearance) {
-                        ForEach(AppAppearance.allCases, id: \.self) { appearance in
-                            Text(appearance.displayName).tag(appearance)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                    NotchSegmentedPicker(
+                        selection: $settings.appearance,
+                        options: AppAppearance.allCases.map { ($0, $0.displayName) }
+                    )
                     .frame(width: 230)
                     .onChange(of: settings.appearance) { _, _ in
                         model.applyAppearance()
@@ -733,17 +741,17 @@ private struct AppearanceSettingsView: View {
                 Divider().padding(.leading, 12)
                 SettingsRow {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Translucent materials")
+                        Text("Notch surface")
                             .font(.nSmall)
-                        Text("Use native vibrancy for panel surfaces.")
+                        Text("Always pure black and fully opaque to match the MacBook cutout.")
                             .font(.nCaptionRegular)
                             .foregroundStyle(Color.nTextTertiary)
                     }
                     Spacer()
-                    Toggle("", isOn: $settings.transparencyEnabled)
-                        .labelsHidden()
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
+                    Text("BLACK")
+                        .font(.system(size: 8, weight: .bold))
+                        .tracking(0.8)
+                        .foregroundStyle(Color.nTextTertiary)
                 }
             }
 
@@ -757,13 +765,10 @@ private struct AppearanceSettingsView: View {
                             .foregroundStyle(Color.nTextTertiary)
                     }
                     Spacer()
-                    Picker("", selection: $settings.density) {
-                        ForEach(InterfaceDensity.allCases, id: \.self) { density in
-                            Text(density.displayName).tag(density)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
+                    NotchSegmentedPicker(
+                        selection: $settings.density,
+                        options: InterfaceDensity.allCases.map { ($0, $0.displayName) }
+                    )
                     .frame(width: 200)
                 }
                 Divider().padding(.leading, 12)
@@ -804,14 +809,6 @@ private struct AppearanceSettingsView: View {
                     }
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.nSurfaceRaised.opacity(0.65))
-                    )
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .strokeBorder(Color.nHairline, lineWidth: 0.8)
-                    }
                 }
                 .padding(12)
             }
@@ -932,10 +929,6 @@ private struct PrivacySettingsView: View {
                     .lineSpacing(1.5)
             }
             .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.nSuccess.opacity(0.045))
-            )
         }
         .alert("Turn off history?", isPresented: $historyOffPresented) {
             Button("Cancel", role: .cancel) {}
@@ -1077,10 +1070,6 @@ private struct AboutSettingsView: View {
             }
             .padding(13)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.nSurfaceRaised.opacity(0.45))
-            )
 
             Text("No analytics. No tracking. API keys and conversations stay on this Mac except when you send a request to the provider you chose.")
                 .font(.nCaptionRegular)
@@ -1116,13 +1105,5 @@ private struct AboutSettingsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Color.primary.opacity(0.025))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(Color.nHairline, lineWidth: 0.7)
-        }
     }
 }

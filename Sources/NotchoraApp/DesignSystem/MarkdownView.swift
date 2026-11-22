@@ -356,10 +356,6 @@ struct CodeBlockView: View {
                     .foregroundStyle(copied ? Color.nSuccess : Color.nTextSecondary)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .fill(Color.primary.opacity(0.05))
-                    )
                 }
                 .buttonStyle(.plain)
                 .help("Copy code")
@@ -378,15 +374,9 @@ struct CodeBlockView: View {
                     .textSelection(.enabled)
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.nCodeBackground)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.nHairline, lineWidth: 0.8)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .background(Color.black)
+        .overlay(alignment: .top) { Rectangle().fill(Color(white: 0.16)).frame(height: 0.7) }
+        .overlay(alignment: .bottom) { Rectangle().fill(Color(white: 0.12)).frame(height: 0.7) }
     }
 }
 
@@ -404,7 +394,7 @@ private struct MarkdownTable: View {
                             .frame(minWidth: 70, alignment: .leading)
                     }
                 }
-                .background(Color.primary.opacity(0.035))
+                .background(Color.black)
                 ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                     GridRow {
                         ForEach(0..<headers.count, id: \.self) { column in
@@ -419,7 +409,7 @@ private struct MarkdownTable: View {
                     }
                     if index < rows.count - 1 {
                         GridRow {
-                            Color.nHairline
+                            Color(white: 0.14)
                                 .frame(height: 1)
                                 .gridCellColumns(max(headers.count, 1))
                         }
@@ -428,15 +418,7 @@ private struct MarkdownTable: View {
             }
             .padding(.horizontal, 10)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.primary.opacity(0.025))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.nHairline, lineWidth: 0.8)
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(Color.black)
     }
 }
 

@@ -107,12 +107,72 @@ enum QAHarness {
         try? await Task.sleep(for: .milliseconds(500))
         capture(panel, name: "10-multi-ai", directory: outputDirectory)
 
-        await captureSettings(model: model, directory: outputDirectory)
+        await captureSettings(model: model, panel: panel, directory: outputDirectory)
 
         model.route = .chat
         model.setPresentation(.compact, animated: false)
         try? await Task.sleep(for: .milliseconds(400))
         capture(panel, name: "11-compact-active", directory: outputDirectory)
+
+        // Capture the same window while it is physically growing, to make the
+        // continuous notch expansion reviewable frame by frame.
+        model.setPresentation(.expanded, animated: true)
+        try? await Task.sleep(for: .milliseconds(70))
+        capture(panel, name: "16-expand-70ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(100))
+        capture(panel, name: "17-expand-170ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(180))
+        capture(panel, name: "18-expand-350ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(400))
+        capture(panel, name: "19-expand-final", directory: outputDirectory)
+
+        model.isModelPickerPresented = true
+        try? await Task.sleep(for: .milliseconds(350))
+        capture(panel, name: "24-model-picker", directory: outputDirectory)
+        model.isModelPickerPresented = false
+
+        model.isHandoffPresented = true
+        try? await Task.sleep(for: .milliseconds(400))
+        capture(panel, name: "25-handoff", directory: outputDirectory)
+        model.isHandoffPresented = false
+
+        model.isSystemPromptPresented = true
+        try? await Task.sleep(for: .milliseconds(300))
+        capture(panel, name: "26-system-prompt", directory: outputDirectory)
+        model.isSystemPromptPresented = false
+
+        model.isScreenCapturePickerPresented = true
+        try? await Task.sleep(for: .milliseconds(300))
+        capture(panel, name: "27-screen-capture", directory: outputDirectory)
+        model.isScreenCapturePickerPresented = false
+
+        model.isModelPickerPresented = false
+        model.voicePresented = true
+        try? await Task.sleep(for: .milliseconds(300))
+        capture(panel, name: "28-voice", directory: outputDirectory)
+        model.voicePresented = false
+
+        model.setPresentation(.workspace, animated: false)
+        model.route = .workflows
+        try? await Task.sleep(for: .milliseconds(400))
+        model.workflowEditor = model.workflowDraft()
+        try? await Task.sleep(for: .milliseconds(400))
+        capture(panel, name: "29-workflow-editor", directory: outputDirectory)
+        model.workflowEditor = nil
+        model.route = .chat
+        model.setPresentation(.expanded, animated: false)
+        try? await Task.sleep(for: .milliseconds(300))
+
+        // Collapse the same surface back into the notch and sample the shrink.
+        model.setPresentation(.compact, animated: true)
+        try? await Task.sleep(for: .milliseconds(80))
+        capture(panel, name: "20-collapse-80ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(120))
+        capture(panel, name: "21-collapse-200ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(200))
+        capture(panel, name: "22-collapse-400ms", directory: outputDirectory)
+        try? await Task.sleep(for: .milliseconds(350))
+        capture(panel, name: "23-collapse-final", directory: outputDirectory)
 
         print("QA screenshots written to \(outputDirectory.path)")
         fflush(stdout)
@@ -140,37 +200,29 @@ enum QAHarness {
         let url = directory.appendingPathComponent("\(name).png")
         do {
             try data.write(to: url)
-            print("QA capture: \(url.lastPathComponent) \(Int(bounds.width))×\(Int(bounds.height))")
+            print("QA capture: \(url.lastPathComponent) \(Int(bounds.width))×\(Int(bounds.height)) window=\(window?.frame ?? .zero)")
         } catch {
             print("QA capture failed: \(error)")
         }
     }
 
-    private static func captureSettings(model: AppModel, directory: URL) async {
+    private static func captureSettings(model: AppModel, panel: NSWindow?, directory: URL) async {
         model.requestSettings(.general)
         try? await Task.sleep(for: .milliseconds(900))
-        print("QA visible windows: \(NSApp.windows.filter(\.isVisible).map { "\($0.title) \($0.frame)" })")
-        guard let window = NSApp.windows.first(where: {
-            $0.isVisible && $0.title == "NOTCHORA Settings"
-        }) else {
-            print("QA capture: settings window did not open")
-            return
-        }
-        capture(window, name: "12-settings-general", directory: directory)
+        capture(panel, name: "12-settings-general", directory: directory)
 
         model.settingsTabRequest = .providers
         try? await Task.sleep(for: .milliseconds(500))
-        capture(window, name: "13-settings-providers", directory: directory)
+        capture(panel, name: "13-settings-providers", directory: directory)
 
         model.settingsTabRequest = .privacy
         try? await Task.sleep(for: .milliseconds(500))
-        capture(window, name: "14-settings-privacy", directory: directory)
+        capture(panel, name: "14-settings-privacy", directory: directory)
 
         model.settings.appearance = .light
         model.applyAppearance()
         try? await Task.sleep(for: .milliseconds(600))
-        capture(window, name: "15-settings-light", directory: directory)
-        window.orderOut(nil)
+        capture(panel, name: "15-settings-light", directory: directory)
     }
 
     private static func fixtureConversation() -> Conversation {

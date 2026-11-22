@@ -51,15 +51,7 @@ struct ToastView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .frame(maxWidth: 500, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color.nPanelSolid)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.nHairlineStrong.opacity(0.7), lineWidth: 0.8)
-        }
-        .shadow(color: Color.black.opacity(0.24), radius: 18, y: 7)
+        .background(Color.black)
     }
 
     private var icon: String {
@@ -93,12 +85,7 @@ struct SelectionActionOverlay: View {
     ]
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.28)
-                .ignoresSafeArea()
-                .onTapGesture { model.dismissSelectionOffer() }
-
-            VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: 13) {
                 HStack(spacing: 9) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -122,9 +109,8 @@ struct SelectionActionOverlay: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(Color.nTextTertiary)
+                            .foregroundStyle(Color.white.opacity(0.6))
                             .frame(width: 22, height: 22)
-                            .background(Circle().fill(Color.primary.opacity(0.05)))
                     }
                     .buttonStyle(.borderless)
                 }
@@ -137,7 +123,7 @@ struct SelectionActionOverlay: View {
                     .frame(height: 96)
                     .background(
                         RoundedRectangle(cornerRadius: 9, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.6))
+                            .fill(Color.black)
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 9, style: .continuous)
@@ -166,14 +152,6 @@ struct SelectionActionOverlay: View {
                             }
                             .padding(.horizontal, 9)
                             .frame(height: 32)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .fill(Color.primary.opacity(0.035))
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                    .strokeBorder(Color.nHairline.opacity(0.7), lineWidth: 0.7)
-                            }
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -185,22 +163,14 @@ struct SelectionActionOverlay: View {
                     .font(.nCaptionRegular)
                     .foregroundStyle(Color.nTextTertiary)
             }
-            .padding(15)
-            .frame(width: 470)
-            .background(
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
-                    .fill(Color.nPanelSolid)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
-                    .strokeBorder(Color.nHairlineStrong.opacity(0.65), lineWidth: 0.8)
-            }
-            .shadow(color: .black.opacity(0.35), radius: 30, y: 10)
-            .onTapGesture {}
-            .onAppear {
-                if editedText.isEmpty { editedText = offer.text }
-            }
+        .padding(20)
+        .frame(maxWidth: 640)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
+        .onAppear {
+            if editedText.isEmpty { editedText = offer.text }
         }
+        .onTapGesture {}
     }
 }
 
@@ -209,12 +179,7 @@ struct SelectionFailureOverlay: View {
     let failure: SelectionFailure
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.28)
-                .ignoresSafeArea()
-                .onTapGesture { model.dismissSelectionFailure() }
-
-            VStack(alignment: .leading, spacing: 13) {
+        VStack(alignment: .leading, spacing: 13) {
                 HStack(spacing: 9) {
                     Image(systemName: failure.reason == .accessibilityDenied ? "hand.raised" : "text.cursor")
                         .font(.system(size: 14, weight: .medium))
@@ -235,9 +200,8 @@ struct SelectionFailureOverlay: View {
                     } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(Color.nTextTertiary)
+                            .foregroundStyle(Color.white.opacity(0.6))
                             .frame(width: 22, height: 22)
-                            .background(Circle().fill(Color.primary.opacity(0.05)))
                     }
                     .buttonStyle(.borderless)
                 }
@@ -278,18 +242,10 @@ struct SelectionFailureOverlay: View {
                     .buttonStyle(NButtonStyle(variant: .ghost, compact: true))
                 }
             }
-            .padding(16)
-            .frame(width: 450)
-            .background(
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
-                    .fill(Color.nPanelSolid)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
-                    .strokeBorder(Color.nHairlineStrong.opacity(0.65), lineWidth: 0.8)
-            }
-            .shadow(color: .black.opacity(0.35), radius: 30, y: 10)
-            .onTapGesture {}
-        }
+        .padding(20)
+        .frame(maxWidth: 620)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
+        .onTapGesture {}
     }
 }

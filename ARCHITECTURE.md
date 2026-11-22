@@ -49,12 +49,11 @@ flowchart TB
 
 ### App entry
 
-`NotchoraApp` is a SwiftUI `App` with a `Settings` scene and a custom `NSApplicationDelegate`.
+`NotchoraApp` is a SwiftUI `App` with an empty `Settings` scene and a custom `NSApplicationDelegate`. Cmd+, and the app-menu Settings item are routed into the notch workspace; there is no separate settings window.
 
 `AppDelegate` owns:
 
 - the notch window controller;
-- the custom settings window controller;
 - the status bar controller;
 - the Carbon global hotkey manager;
 - the application termination flush.
@@ -68,16 +67,19 @@ The app is an accessory app (`LSUIElement = true`). There is no Dock icon and no
 - `.nonactivatingPanel` style;
 - `.statusBar` level;
 - `canJoinAllSpaces`, `fullScreenAuxiliary`, `stationary`, `ignoresCycle`;
-- transparent background, no titlebar;
+- a clear window background, no titlebar, no shadow, and no window background blur;
 - a SwiftUI `NSHostingView` as content.
+
+The panel is only a transparent container. Inside it, `NotchRootView` renders the notch surface as one SwiftUI shape with an opaque `Color.black` fill. The shape's top edge is pinned to the display edge; its width and height animate from the compact notch size to the expanded/workspace size. Only the rounded area outside the shape is transparent. There is no second window and no material or border around the surface.
 
 `NotchGeometry` chooses the target `NSScreen` from the display preference and computes:
 
 - physical notch width using `auxiliaryTopLeftArea` / `auxiliaryTopRightArea`;
 - top rail height using `safeAreaInsets.top`;
-- compact, expanded, and workspace frames.
+- compact, expanded, and workspace surface sizes;
+- the window container frame used while the shape animates.
 
-On notched displays the compact window is anchored to the top edge so its dark rail merges with the hardware cutout. On displays without a notch, a compact floating pill is positioned just below the menu bar.
+On notched displays the compact surface is anchored to the top edge and sized from the hardware notch width. On displays without a notch, a compact black pill is positioned just below the menu bar with rounded top and bottom corners.
 
 Expansion saves the previously frontmost app, activates NOTCHORA so text fields and VoiceOver are reliable, and restores the previous app on collapse only when NOTCHORA is still frontmost. This avoids focus theft while keeping the panel usable.
 
@@ -97,9 +99,11 @@ stateDiagram-v2
     Hidden --> Expanded: open shortcut / menu
 ```
 
-The window controller animates the panel frame with `NSAnimationContext` and a spring-like timing function. SwiftUI content transitions use the design system's motion tokens. `Reduce Motion` and the in-app animation setting disable the window frame animation.
+The window container is enlarged immediately when the surface needs room and trimmed back only after the spring has settled. The visible black shape itself is animated by SwiftUI from a `displayedSurfaceSize` state; it grows down and out from the top centre. Content is faded in after the growth starts, and the compact activity indicator is hidden while the shape collapses. This avoids a resized-window flash, a rectangular snapshot, or a separate panel appearing under the notch.
 
-The controller rebuilds its hosting view when the global appearance changes. This guarantees that AppKit-drawn materials, symbols, and SwiftUI environment values stay consistent when switching between light and dark modes.
+`Reduce Motion` and the in-app animation setting disable the surface spring; the shape changes size immediately.
+
+The hosting view is rebuilt when the global appearance changes, but the notch surface itself is always forced to dark, opaque black. The appearance preference still controls system menus and AppKit controls; it never makes the notch translucent or light.
 
 ## 3. State and business logic
 
@@ -313,29 +317,30 @@ The tests use `InMemoryKeychainStore`; the debug-only QA harness also uses an in
 | Voice output | `AVSpeechSynthesizer` | Can be interrupted |
 | AI app launcher | `NSWorkspace` + `NSOpenPanel` | Opens apps; never reads their internal history |
 | Launch at login | `SMAppService.mainApp` | Requires installed/signed app and user approval |
-| Appearance | `NSApp.appearance` + rebuilt hosting view | System/light/dark |
+| Appearance | `NSApp.appearance` + rebuilt hosting view | System menus; notch is always black |
 | Permissions | TCC APIs and System Settings deep links | User-controlled |
 
 ## 11. Design system
 
 The SwiftUI design system lives in `Sources/NotchoraApp/DesignSystem`:
 
-- dynamic semantic palette with light/dark variants;
+- a single opaque-black notch surface with a welded top edge and rounded lower corners;
 - native SF typography and monospaced code typography;
-- `NSVisualEffectView` materials + tinted surfaces;
-- custom notch shapes and surface borders;
+- flat black content surfaces, with no material, vibrancy, blur, glass, or outline around the notch;
+- a flat segmented picker, black text fields with a hairline affordance, and text-first menu pickers;
+- custom notch shapes, including the fallback pill;
 - button styles, provider glyphs, status pills, tags, search fields, empty states;
 - Markdown renderer with custom block parsing, tables, code blocks, and syntax highlighting;
 - streaming indicators, indeterminate bars, audio waveform, prompted editor;
 - motion tokens and Reduce Motion handling.
 
-The visual language is intentionally restrained: the notch rail stays dark like the hardware cutout, chat surfaces use native materials, and accent color is reserved for actions and active state.
+The visual language is intentionally restrained: the notch surface is pure black like the hardware cutout, the content sits directly on that surface, and accent color is reserved for actions and active state. Cards, translucent fills, and separate floating panels are deliberately avoided.
 
 ## 12. Debug-only QA harness
 
 `QAHarness.swift` is compiled only in `#if DEBUG` and activated by `NOTCHORA_QA=1`.
 
-It creates fixture conversations/tasks/Multi-AI results, switches appearance, drives compact/expanded/workspace/routes/settings, and captures the real `NSWindow.contentView` with `cacheDisplay(in:to:)` into PNG files. The app never uses these fixtures in release.
+It creates fixture conversations/tasks/Multi-AI results, switches appearance, drives compact/expanded/workspace/routes/settings, opens the in-notch overlays, and captures the real `NSWindow.contentView` with `cacheDisplay(in:to:)` into PNG files. It also samples intermediate expansion/collapse frames and validates the opaque black, welded, centered notch shape pixel by pixel. The app never uses these fixtures in release.
 
 See [TESTING.md](TESTING.md) and [QA.md](QA.md).
 
@@ -344,7 +349,7 @@ See [TESTING.md](TESTING.md) and [QA.md](QA.md).
 | Decision | Reason | Tradeoff |
 |---|---|---|
 | Swift Package instead of a hand-written `.xcodeproj` | Reproducible build, clean module boundary, Xcode opens it directly | No XCUITest app bundle |
-| AppKit `NSPanel` + SwiftUI | Precise window levels/Spaces, modern UI | Focus and activation need explicit handling |
+| AppKit container `NSPanel` + SwiftUI surface | Precise window levels/Spaces and a shape that is not tied to window-frame animation | Focus and activation need explicit handling |
 | Provider protocol + SSE | Vendor differences stay isolated | More code than a single Chat Completions client |
 | JSON state + Keychain | Simple, inspectable, secure credentials | Large image attachments live in JSON |
 | In-process tasks | No background daemon or helper process | Quitting cancels running work |

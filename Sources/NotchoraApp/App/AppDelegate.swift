@@ -8,7 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notchController: NotchWindowController?
     private var statusBarController: StatusBarController?
     private var hotKeyManager: GlobalHotKeyManager?
-    private var settingsController: SettingsWindowController?
     private var terminationPending = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -71,11 +70,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configureModelCallbacks() {
-        model.presentationDidChange = { [weak self] presentation in
-            self?.notchController?.apply(presentation)
-        }
-        model.openSettingsRequested = { [weak self] tab in
-            self?.openSettings(tab: tab)
+        model.presentationDidChange = { [weak self] presentation, animated in
+            self?.notchController?.apply(presentation, animated: animated)
         }
         model.menuBarVisibilityChanged = { [weak self] visible in
             self?.statusBarController?.setVisible(visible)
@@ -123,10 +119,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.shortcutRegistrationErrors = hotKeyManager.update(bindings: bindings)
     }
 
-    private func openSettings(tab: SettingsTab) {
-        if settingsController == nil {
-            settingsController = SettingsWindowController(model: model)
-        }
-        settingsController?.show(tab: tab)
-    }
 }

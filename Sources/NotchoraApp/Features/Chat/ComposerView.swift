@@ -92,18 +92,12 @@ struct ComposerView: View {
                 .padding(.horizontal, 11)
                 .padding(.bottom, 7)
             }
-            .background(
-                RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .fill(Color.nSurfaceRaised.opacity(0.88))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 15, style: .continuous)
-                    .strokeBorder(
-                        isDropTarget ? Color.nAccent.opacity(0.6) : Color.nHairlineStrong.opacity(0.65),
-                        lineWidth: isDropTarget ? 1.2 : 0.8
-                    )
+            .background(Color.black)
+            .overlay(alignment: .top) {
+                Rectangle()
+                    .fill(isDropTarget ? Color.nAccent : Color(white: 0.16))
+                    .frame(height: isDropTarget ? 1.2 : 0.7)
             }
-            .shadow(color: Color.black.opacity(0.10), radius: 12, y: 5)
         }
         .padding(.horizontal, 14)
         .padding(.top, 7)
@@ -143,14 +137,6 @@ struct ComposerView: View {
         }
         .padding(.horizontal, 10)
         .frame(height: 28)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.nWarning.opacity(0.075))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(Color.nWarning.opacity(0.16), lineWidth: 0.7)
-        }
         .padding(.horizontal, 14)
     }
 
@@ -184,10 +170,6 @@ struct ComposerView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Color.nIcon)
                 .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(Color.primary.opacity(0.045))
-                )
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -206,10 +188,6 @@ struct ComposerView: View {
                 .font(.system(size: 12.5, weight: .medium))
                 .foregroundStyle(model.voicePresented ? Color.nAccent : voiceIconColor)
                 .frame(width: 28, height: 28)
-                .background(
-                    Circle()
-                        .fill(model.voicePresented ? Color.nAccentSoft : Color.clear)
-                )
         }
         .buttonStyle(.borderless)
         .help("Voice Mode")
@@ -292,10 +270,6 @@ struct ComposerView: View {
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 5)
-        .background(
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.primary.opacity(0.04))
-        )
     }
 
     private func submit() {

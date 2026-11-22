@@ -59,7 +59,7 @@ struct NButtonStyle: ButtonStyle {
             case .primary:
                 Color.nAccent.opacity(hovered ? 1 : 0.92)
             case .secondary:
-                Color.nSurfaceRaised.opacity(hovered ? 1 : 0.72)
+                Color.black
             case .ghost:
                 Color.primary.opacity(hovered ? 0.06 : 0)
             case .danger:
@@ -70,11 +70,65 @@ struct NButtonStyle: ButtonStyle {
         private var border: Color {
             switch variant {
             case .primary: .white.opacity(0.12)
-            case .secondary: .nHairline
+            case .secondary: Color(white: hovered ? 0.36 : 0.22)
             case .ghost: .clear
             case .danger: .nDanger.opacity(0.22)
             }
         }
+    }
+}
+
+
+/// A flat, opaque segmented selector for the black notch surface. It avoids
+/// the gray track of the native segmented control.
+
+/// Text fields on the black notch surface. The field is still a black surface,
+/// with a single opaque hairline for affordance instead of a gray bezel.
+struct NotchTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .textFieldStyle(.plain)
+            .padding(.horizontal, 9)
+            .frame(height: 29)
+            .background(Color.black)
+            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .strokeBorder(Color(white: 0.22), lineWidth: 0.8)
+            }
+    }
+}
+
+struct NotchSegmentedPicker<Value: Hashable>: View {
+    @Binding var selection: Value
+    let options: [(Value, String)]
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.0) { option in
+                Button {
+                    selection = option.0
+                } label: {
+                    Text(option.1)
+                        .font(.nSmallMedium)
+                        .foregroundStyle(selection == option.0 ? Color.white : Color.white.opacity(0.42))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 28)
+                        .overlay(alignment: .bottom) {
+                            if selection == option.0 {
+                                Capsule()
+                                    .fill(Color.nAccent)
+                                    .frame(width: 20, height: 2)
+                                    .padding(.bottom, 1)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityAddTraits(selection == option.0 ? .isSelected : [])
+            }
+        }
+        .background(Color.black)
     }
 }
 
@@ -241,13 +295,10 @@ struct SearchInput: View {
         }
         .padding(.horizontal, 10)
         .frame(height: 30)
-        .background(
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .fill(Color.nSurfaceSunken.opacity(0.72))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 9, style: .continuous)
-                .strokeBorder(focused ? Color.nAccent.opacity(0.45) : Color.nHairline, lineWidth: 0.8)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(focused ? Color.nAccent : Color(white: 0.18))
+                .frame(height: focused ? 1.2 : 0.7)
         }
         .animation(.quick, value: focused)
     }
@@ -327,10 +378,6 @@ struct HoverHighlight: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(hovered ? Color.primary.opacity(0.045) : .clear)
-            )
             .onHover { hovered = $0 }
             .animation(.quick, value: hovered)
     }

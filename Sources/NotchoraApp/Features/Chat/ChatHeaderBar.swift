@@ -110,8 +110,6 @@ struct ChatHeaderBar: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
         .alert("Rename Chat", isPresented: $renamePresented) {
             TextField("Chat title", text: $renameText)
             Button("Cancel", role: .cancel) {}
@@ -125,7 +123,7 @@ struct ChatHeaderBar: View {
         }
     }
     private var handoffColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.72) : Color.black.opacity(0.62)
+        Color.white.opacity(0.62)
     }
 }
 
@@ -185,153 +183,142 @@ struct ConversationSwitcher: View {
 struct ModelPickerButton: View {
     let model: AppModel
 
-    @State private var presented = false
-
     var body: some View {
         Button {
-            presented.toggle()
+            model.isModelPickerPresented.toggle()
         } label: {
             HStack(spacing: 6) {
                 ProviderGlyph(provider: model.activeSelection.providerID, size: 16)
                 Text(model.activeModel.displayName)
                     .font(.nSmallMedium)
-                    .foregroundStyle(Color.nTextPrimary)
+                    .foregroundStyle(Color.white.opacity(0.92))
                     .lineLimit(1)
                     .truncationMode(.middle)
                 Image(systemName: "chevron.down")
                     .font(.system(size: 7.5, weight: .semibold))
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.42))
             }
-            .padding(.horizontal, 7)
+            .padding(.horizontal, 4)
             .frame(height: 26)
-            .background(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(presented ? Color.nAccentSoft : Color.primary.opacity(0.045))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(
-                        presented ? Color.nAccent.opacity(0.25) : Color.nHairline,
-                        lineWidth: 0.7
-                    )
-            }
+            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.borderless)
         .help("Choose a model")
         .accessibilityLabel("Choose a model. Current: \(model.activeModel.displayName)")
-        .popover(isPresented: $presented, arrowEdge: .bottom) {
-            ModelPickerPopover(model: model, presented: $presented)
-        }
-        .onChange(of: presented) { _, isPresented in
-            model.isTransientUIPresented = isPresented
-        }
-        .onDisappear {
-            model.isTransientUIPresented = false
-        }
     }
 }
 
-struct ModelPickerPopover: View {
+struct ModelPickerOverlay: View {
     let model: AppModel
-    @Binding var presented: Bool
+    @State private var refreshing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 7) {
-                Text("Model")
-                    .font(.nSmallMedium)
-                    .foregroundStyle(Color.nTextPrimary)
+        VStack(spacing: 0) {
+            HStack(spacing: 9) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Choose a model")
+                        .font(.nHeadline)
+                        .foregroundStyle(Color.white)
+                    Text("Model lists are provided by each vendor")
+                        .font(.nCaptionRegular)
+                        .foregroundStyle(Color.white.opacity(0.42))
+                }
                 Spacer()
-                Text("Provider lists update from the API")
-                    .font(.nCaptionRegular)
-                    .foregroundStyle(Color.nTextTertiary)
+                if refreshing { Spinner() }
+                Button { model.isModelPickerPresented = false } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.6))
+                        .frame(width: 26, height: 26)
+                }
+                .buttonStyle(.borderless)
+                .help("Close model picker")
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 11)
-            .padding(.bottom, 8)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 10)
 
-            Hairline()
+            Rectangle().fill(Color(white: 0.16)).frame(height: 0.7)
 
             ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 14) {
                     ForEach(AIProviderID.allCases) { provider in
                         providerSection(provider)
                     }
                 }
-                .padding(7)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: 720, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxHeight: 360)
 
-            Hairline()
+            Rectangle().fill(Color(white: 0.16)).frame(height: 0.7)
 
-            HStack {
+            HStack(spacing: 12) {
                 Button {
-                    presented = false
+                    model.isModelPickerPresented = false
                     model.requestSettings(.providers)
                 } label: {
-                    Label("Manage Models…", systemImage: "slider.horizontal.3")
+                    Label("Manage models", systemImage: "slider.horizontal.3")
                         .font(.nCaption)
-                        .foregroundStyle(Color.nTextSecondary)
+                        .foregroundStyle(Color.white.opacity(0.62))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.borderless)
                 Spacer()
-                Button("Refresh") {
-                    Task {
-                        for provider in model.configuredProviders {
-                            await model.refreshProviderModels(provider)
-                        }
-                    }
+                Button {
+                    refresh()
+                } label: {
+                    Label("Refresh models", systemImage: "arrow.clockwise")
+                        .font(.nCaption)
+                        .foregroundStyle(Color.nAccent)
                 }
-                .buttonStyle(.plain)
-                .font(.nCaption)
-                .foregroundStyle(Color.nAccent)
+                .buttonStyle(.borderless)
+                .disabled(refreshing)
             }
-            .padding(.horizontal, 11)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
-        .frame(width: 322)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
     }
 
     private func providerSection(_ provider: AIProviderID) -> some View {
         let candidates = model.catalog.models(for: provider)
-        return VStack(alignment: .leading, spacing: 1) {
+        return VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 5) {
                 ProviderGlyph(provider: provider, size: 14)
                 Text(provider.displayName)
                     .font(.nCaption)
-                    .foregroundStyle(Color.nTextSecondary)
+                    .foregroundStyle(Color.white.opacity(0.5))
                 if !model.hasAPIKey(provider) {
                     TagView(text: "No key", symbol: "key.slash", tint: .nWarning)
                 }
                 Spacer()
                 Text("\(candidates.count)")
                     .font(.nCaptionRegular)
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.32))
             }
-            .padding(.horizontal, 6)
-            .padding(.top, 6)
-            .padding(.bottom, 2)
+            .padding(.bottom, 3)
 
             ForEach(candidates) { candidate in
                 modelRow(candidate, provider: provider)
             }
         }
-        .padding(.bottom, 3)
     }
 
     private func modelRow(_ candidate: AIModel, provider: AIProviderID) -> some View {
         let selected = provider == model.activeSelection.providerID
             && candidate.id == model.activeSelection.modelID
+        let enabled = model.hasAPIKey(provider)
         return Button {
             model.setModel(ModelSelection(providerID: provider, modelID: candidate.id))
-            presented = false
+            model.isModelPickerPresented = false
         } label: {
-            HStack(spacing: 7) {
-                VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(candidate.displayName)
                         .font(.nSmall)
-                        .foregroundStyle(Color.nTextPrimary)
+                        .foregroundStyle(Color.white.opacity(enabled ? 0.92 : 0.38))
                         .lineLimit(1)
                     HStack(spacing: 4) {
                         Text(candidate.id)
@@ -342,13 +329,13 @@ struct ModelPickerPopover: View {
                         }
                     }
                     .font(.nCaptionRegular)
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.34))
                 }
                 Spacer(minLength: 4)
                 if candidate.supportsVision {
                     Image(systemName: "eye")
                         .font(.system(size: 8))
-                        .foregroundStyle(Color.nTextTertiary)
+                        .foregroundStyle(Color.white.opacity(0.36))
                 }
                 if selected {
                     Image(systemName: "checkmark")
@@ -356,17 +343,27 @@ struct ModelPickerPopover: View {
                         .foregroundStyle(Color.nAccent)
                 }
             }
-            .padding(.horizontal, 7)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(selected ? Color.nAccentSoft : Color.clear)
-            )
+            .padding(.horizontal, 9)
+            .frame(height: 38)
+            .overlay(alignment: .leading) {
+                if selected {
+                    Capsule().fill(Color.nAccent).frame(width: 2, height: 18)
+                }
+            }
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
-        .hoverHighlight(radius: 6)
-        .disabled(!model.hasAPIKey(provider))
-        .opacity(model.hasAPIKey(provider) ? 1 : 0.55)
+        .buttonStyle(.borderless)
+        .disabled(!enabled)
+    }
+
+    private func refresh() {
+        guard !refreshing else { return }
+        refreshing = true
+        Task {
+            for provider in model.configuredProviders {
+                await model.refreshProviderModels(provider)
+            }
+            refreshing = false
+        }
     }
 }

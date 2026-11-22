@@ -7,13 +7,10 @@ struct WorkflowsView: View {
     @State private var runSheetWorkflow: Workflow?
     @State private var deleteTarget: Workflow?
 
-    private var editorBinding: Binding<Workflow?> {
-        Binding(get: { model.workflowEditor }, set: { model.workflowEditor = $0 })
-    }
-
     var body: some View {
-        VStack(spacing: 0) {
-            header
+        ZStack {
+            VStack(spacing: 0) {
+                header
 
             if let run = model.workflowRun, run.status == .streaming || run.status == .failed {
                 runningCard(run)
@@ -46,12 +43,22 @@ struct WorkflowsView: View {
                     .padding(.bottom, 14)
                 }
             }
-        }
-        .sheet(item: $runSheetWorkflow) { workflow in
-            WorkflowRunSheet(model: model, workflow: workflow)
-        }
-        .sheet(item: editorBinding) { workflow in
-            WorkflowEditorView(model: model, workflow: workflow)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if let workflow = runSheetWorkflow {
+                WorkflowRunSheet(model: model, workflow: workflow) {
+                    runSheetWorkflow = nil
+                }
+                .zIndex(10)
+            }
+
+            if let workflow = model.workflowEditor {
+                WorkflowEditorView(model: model, workflow: workflow) {
+                    model.workflowEditor = nil
+                }
+                .zIndex(20)
+            }
         }
         .alert(
             "Delete workflow?",
@@ -81,7 +88,7 @@ struct WorkflowsView: View {
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.nTextSecondary)
                     .frame(width: 26, height: 26)
-                    .background(Circle().fill(Color.primary.opacity(0.045)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
 
@@ -103,8 +110,7 @@ struct WorkflowsView: View {
         }
         .padding(.horizontal, 13)
         .frame(height: 46)
-        .background(Color.nPanel.opacity(0.30))
-        .overlay(alignment: .bottom) { Hairline() }
+        .background(Color.black)
     }
 
     private func workflowCard(_ workflow: Workflow) -> some View {
@@ -183,14 +189,7 @@ struct WorkflowsView: View {
             }
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.primary.opacity(0.028))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.nHairline.opacity(0.8), lineWidth: 0.7)
-        }
+        .padding(.vertical, 3)
     }
 
     private func runningCard(_ run: WorkflowRunDisplay) -> some View {
@@ -229,22 +228,14 @@ struct WorkflowsView: View {
             }
         }
         .padding(9)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.nAccentSoft.opacity(0.6))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.nAccent.opacity(0.16), lineWidth: 0.8)
-        }
+        .padding(.vertical, 3)
     }
 }
 
 struct WorkflowRunSheet: View {
     let model: AppModel
     let workflow: Workflow
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
     @State private var input = ""
 
     var body: some View {
@@ -268,17 +259,16 @@ struct WorkflowRunSheet: View {
                         .lineLimit(1)
                 }
                 Spacer()
-                Button { dismiss() } label: {
+                Button { onClose() } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(Color.nTextTertiary)
                         .frame(width: 24, height: 24)
-                        .background(Circle().fill(Color.primary.opacity(0.05)))
+                        .background(Circle().fill(Color.black))
                 }
                 .buttonStyle(.borderless)
             }
             .padding(16)
-            .overlay(alignment: .bottom) { Hairline() }
 
             VStack(alignment: .leading, spacing: 12) {
                 SectionLabel(text: "Input")
@@ -289,7 +279,7 @@ struct WorkflowRunSheet: View {
                     .frame(height: 150)
                     .background(
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.55))
+                            .fill(Color.black)
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -309,7 +299,7 @@ struct WorkflowRunSheet: View {
                                 .font(.system(size: 9, weight: .bold, design: .rounded))
                                 .foregroundStyle(Color.nTextTertiary)
                                 .frame(width: 16, height: 16)
-                                .background(Circle().fill(Color.primary.opacity(0.05)))
+                                .background(Circle().fill(Color.black))
                             ProviderGlyph(provider: step.providerID, size: 16)
                             Text(step.name)
                                 .font(.nCaption)
@@ -333,11 +323,11 @@ struct WorkflowRunSheet: View {
             .padding(16)
 
             HStack {
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Spacer()
                 Button("Run Workflow") {
-                    dismiss()
+                    onClose()
                     model.runWorkflow(workflow, input: input)
                 }
                 .buttonStyle(NButtonStyle(variant: .primary))
@@ -347,19 +337,20 @@ struct WorkflowRunSheet: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 520, height: 540)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 760)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
     }
 }
 
 struct WorkflowEditorView: View {
     let model: AppModel
-
-    @Environment(\.dismiss) private var dismiss
+    let onClose: () -> Void
     @State private var workflow: Workflow
 
-    init(model: AppModel, workflow: Workflow) {
+    init(model: AppModel, workflow: Workflow, onClose: @escaping () -> Void) {
         self.model = model
+        self.onClose = onClose
         _workflow = State(initialValue: workflow)
     }
 
@@ -371,11 +362,11 @@ struct WorkflowEditorView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     labelledField("Name") {
                         TextField("Workflow name", text: $workflow.name)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(NotchTextFieldStyle())
                     }
                     labelledField("Summary") {
                         TextField("What this workflow does", text: $workflow.summary)
-                            .textFieldStyle(.roundedBorder)
+                            .textFieldStyle(NotchTextFieldStyle())
                     }
 
                     HStack {
@@ -409,11 +400,11 @@ struct WorkflowEditorView: View {
                         .foregroundStyle(Color.nTextTertiary)
                 }
                 Spacer()
-                Button("Cancel") { dismiss() }
+                Button("Cancel") { onClose() }
                     .buttonStyle(NButtonStyle(variant: .ghost))
                 Button("Save Workflow") {
                     model.saveWorkflow(workflow)
-                    dismiss()
+                    onClose()
                 }
                 .buttonStyle(NButtonStyle(variant: .primary))
                 .disabled(workflow.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || workflow.steps.isEmpty)
@@ -422,8 +413,9 @@ struct WorkflowEditorView: View {
             .padding(.vertical, 12)
             .overlay(alignment: .top) { Hairline() }
         }
-        .frame(width: 680, height: 680)
-        .background(Color.nPanelSolid)
+        .frame(maxWidth: 860)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
     }
 
     private var header: some View {
@@ -438,17 +430,16 @@ struct WorkflowEditorView: View {
                     .foregroundStyle(Color.nTextTertiary)
             }
             Spacer()
-            Button { dismiss() } label: {
+            Button { onClose() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(Color.nTextTertiary)
                     .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.primary.opacity(0.05)))
+                    .background(Circle().fill(Color.black))
             }
             .buttonStyle(.borderless)
         }
         .padding(16)
-        .overlay(alignment: .bottom) { Hairline() }
     }
 
     private func stepEditor(_ index: Int) -> some View {
@@ -494,25 +485,13 @@ struct WorkflowEditorView: View {
                         }
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        ProviderGlyph(provider: workflow.steps[index].providerID, size: 16)
-                        Text(model.catalog.model(for: ModelSelection(
-                            providerID: workflow.steps[index].providerID,
-                            modelID: workflow.steps[index].modelID
-                        )).displayName)
-                            .font(.nCaption)
-                            .foregroundStyle(Color.nTextSecondary)
-                            .lineLimit(1)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 7))
-                            .foregroundStyle(Color.nTextTertiary)
-                    }
-                    .padding(.horizontal, 7)
-                    .frame(height: 25)
-                    .background(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(Color.primary.opacity(0.04))
-                    )
+                    Text("\(workflow.steps[index].providerID.shortName) · \(model.catalog.model(for: ModelSelection(providerID: workflow.steps[index].providerID, modelID: workflow.steps[index].modelID)).displayName)  ⌄")
+                        .font(.nCaption)
+                        .foregroundStyle(Color.nTextSecondary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 7)
+                        .frame(height: 25)
+                        .background(Color.black)
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
@@ -544,7 +523,7 @@ struct WorkflowEditorView: View {
                     .frame(height: 25)
                     .background(
                         RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(Color.primary.opacity(0.04))
+                            .fill(Color.black)
                     )
                 }
                 .menuStyle(.borderlessButton)
@@ -563,7 +542,7 @@ struct WorkflowEditorView: View {
                 .frame(height: 82)
                 .background(
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(Color.nSurfaceSunken.opacity(0.5))
+                        .fill(Color.black)
                 )
                 .overlay {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -578,7 +557,7 @@ struct WorkflowEditorView: View {
                     .frame(height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.nSurfaceSunken.opacity(0.5))
+                            .fill(Color.black)
                     )
                     .overlay {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
@@ -588,15 +567,7 @@ struct WorkflowEditorView: View {
             .font(.nCaption)
             .foregroundStyle(Color.nTextSecondary)
         }
-        .padding(11)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color.primary.opacity(0.025))
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.nHairline, lineWidth: 0.7)
-        }
+        .padding(.vertical, 8)
     }
 
     private func labelledField<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {

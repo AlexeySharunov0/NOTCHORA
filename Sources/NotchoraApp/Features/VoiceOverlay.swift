@@ -6,46 +6,24 @@ struct VoiceOverlay: View {
     private var voice: VoiceSession { model.voiceSession }
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.32)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    if voice.phase != .listening && voice.phase != .processing {
-                        model.stopVoiceMode()
-                    }
-                }
+        VStack(spacing: 0) {
+            header
 
-            VStack(spacing: 0) {
-                header
-
-                VStack(spacing: 14) {
-                    waveform
-                    phaseLabel
-                    transcript
-                    controls
-                    privacyNote
-                }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 16)
+            VStack(spacing: 14) {
+                waveform
+                phaseLabel
+                transcript
+                controls
+                privacyNote
             }
-            .frame(width: 470)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.nPanelSolid)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.nAccent.opacity(0.28), Color.nHairline],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 0.9
-                    )
-            }
-            .shadow(color: .black.opacity(0.38), radius: 34, y: 12)
+            .padding(.horizontal, 18)
+            .padding(.top, 12)
+            .padding(.bottom, 16)
+            .frame(maxWidth: 620)
+            .frame(maxWidth: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color.black)
         .accessibilityElement(children: .contain)
     }
 
@@ -78,9 +56,8 @@ struct VoiceOverlay: View {
             } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(Color.nTextTertiary)
+                    .foregroundStyle(Color.white.opacity(0.6))
                     .frame(width: 24, height: 24)
-                    .background(Circle().fill(Color.primary.opacity(0.05)))
             }
             .buttonStyle(.borderless)
             .help("Close Voice Mode")
@@ -92,15 +69,6 @@ struct VoiceOverlay: View {
 
     private var waveform: some View {
         ZStack {
-            RadialGradient(
-                colors: [waveColor.opacity(0.10), .clear],
-                center: .center,
-                startRadius: 4,
-                endRadius: 160
-            )
-            .frame(width: 340, height: 140)
-            .blur(radius: 18)
-
             VoiceWaveform(
                 levels: voice.levels,
                 phase: voice.phase,
@@ -164,14 +132,6 @@ struct VoiceOverlay: View {
             }
             .padding(11)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.nDanger.opacity(0.06))
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(Color.nDanger.opacity(0.14), lineWidth: 0.7)
-            }
         } else if !voice.transcript.isEmpty {
             ScrollView(.vertical, showsIndicators: false) {
                 Text(voice.transcript)
@@ -184,7 +144,7 @@ struct VoiceOverlay: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.primary.opacity(0.035))
+                    .fill(Color.black)
             )
         } else if voice.phase == .responding, !voice.lastResponse.isEmpty {
             Text(voice.lastResponse)
@@ -195,7 +155,7 @@ struct VoiceOverlay: View {
                 .padding(10)
                 .background(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.primary.opacity(0.035))
+                        .fill(Color.black)
                 )
         }
     }

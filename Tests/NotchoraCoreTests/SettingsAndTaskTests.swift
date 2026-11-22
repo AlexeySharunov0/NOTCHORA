@@ -23,7 +23,6 @@ final class SettingsTests: XCTestCase {
         let settings = SettingsStore(defaults: defaults)
         XCTAssertEqual(settings.appearance, .system)
         XCTAssertTrue(settings.animationsEnabled)
-        XCTAssertTrue(settings.transparencyEnabled)
         XCTAssertEqual(settings.defaultProviderID, .openAI)
         XCTAssertEqual(settings.shortcuts.count, ShortcutAction.allCases.count)
         XCTAssertTrue(settings.shortcuts.allSatisfy { $0.combo.isSafeGlobalShortcut })
