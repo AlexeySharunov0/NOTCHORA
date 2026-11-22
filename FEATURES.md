@@ -8,7 +8,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Physical notch detection using `NSScreen` auxiliary areas and safe-area insets.
 - Fallback compact pill on non-notched displays.
 - Open from the exact-notch compact state with the global shortcut or menu-bar item; the cutout area also accepts pointer events where macOS delivers them.
-- Optional hover expansion with delay.
+- Hover preview: slightly widens the cutout under the pointer; click opens.
 - One continuous opaque-black surface that grows downward and outward from the physical notch.
 - No material, blur, glass, border, drop shadow, or separate floating workspace window.
 - Spring shape animation with content fading in after expansion begins.
@@ -90,6 +90,8 @@ This is the functional inventory of the current build. “Implemented” means t
 - Copy message.
 - Regenerate last answer.
 - Stop generation and keep partial output.
+- Sending without an API key keeps the draft in chat, shows an inline Connect action, and does not jump to Settings; the draft survives a Settings round-trip.
+- Hovering the compact cutout widens it by 28 pt as a hit-target preview; clicking opens.
 - Empty, streaming, complete, failed, and cancelled message states.
 - Error cards with retry and provider settings actions.
 - Token usage and duration metadata.
@@ -236,7 +238,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Default provider/model.
 - Default system prompt fallback.
 - Temperature and max output tokens.
-- Hover expansion.
+- Hover preview.
 - Display preference.
 - Reset general settings.
 
@@ -321,7 +323,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Keychain abstraction tests.
 - Task/workflow tests.
 - Settings persistence tests.
-- Debug visual QA harness with 29 screenshots, including expansion/collapse frames and overlays.
+- Debug visual QA harness with 30 screenshots, including expansion/collapse frames and overlays.
 - Monochrome black-and-white app icon.
 - Pixel validation of the opaque-black, welded, centered notch shape.
 - Reduced-motion shape checks.

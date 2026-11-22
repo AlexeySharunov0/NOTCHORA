@@ -275,7 +275,13 @@ struct ComposerView: View {
     private func submit() {
         guard canSend else {
             if !hasKey {
-                model.requestSettings(.providers)
+                model.showToast(ToastMessage(
+                    kind: .warning,
+                    title: "No API key for \(activeProvider.displayName)",
+                    detail: "Connect a provider to send this message. Your draft stays here.",
+                    actionTitle: "Connect",
+                    action: { [weak model] in model?.requestSettings(.providers) }
+                ))
             }
             return
         }

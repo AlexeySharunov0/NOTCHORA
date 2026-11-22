@@ -84,7 +84,7 @@ The build is ad-hoc signed for local use. For launch at login, move `NOTCHORA.ap
 
 ## Connect a provider
 
-1. Press `⌥Space`, use the menu-bar item, or click/hover the cutout area. The compact state is exactly the hardware cutout, with no extra software ears or chin.
+1. Press `⌥Space`, use the menu-bar item, or hover/click the cutout area. Hovering slightly widens the notch as a hit target; clicking opens. The closed state itself is exactly the hardware cutout.
 2. Open **Settings → AI Providers**.
 3. Paste an API key for OpenAI, Anthropic, Google Gemini, or DeepSeek.
 4. Choose **Save & Verify**.
@@ -168,7 +168,7 @@ make build   # debug build
 make test    # XCTest suite
 make app     # release .app bundle
 make dmg     # release .app bundle + DMG
-make qa      # debug visual QA: 29 screenshots, including shape-growth frames
+make qa      # debug visual QA: 30 screenshots, including shape-growth frames
 ```
 
 Direct equivalents:

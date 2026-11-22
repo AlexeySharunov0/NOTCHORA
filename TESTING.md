@@ -135,7 +135,7 @@ The debug-only `QAHarness` is activated by `NOTCHORA_QA=1`. It:
 7. opens the model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor as in-notch overlays;
 8. captures intermediate expansion and collapse frames of the actual surface;
 9. terminates with a success code;
-10. writes 29 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
+10. writes 30 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
 
 The harness uses `NSView.cacheDisplay` so it does not need Screen Recording permission. It is compiled out of release builds. It never touches the real Keychain or Application Support because it uses an in-memory key store and `NOTCHORA_STATE_PATH=build/qa-state.json`.
 
@@ -165,9 +165,9 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 - [ ] Content fades in after the black shape has started growing.
 - [ ] Collapsing returns the same black shape to the compact notch size.
 - [ ] Press ⌥Space or use the menu-bar item to expand from the exact-notch compact state.
-- [ ] Click/hover the cutout area and confirm it expands where macOS delivers pointer events.
+- [ ] Hover the cutout: it widens slightly (185 → 213 pt) but does not open; click opens.
+- [ ] Press Return in the composer without a provider key: the draft stays, a Connect toast appears, the route stays on Chat, and the draft survives opening Settings and returning.
 - [ ] Click outside → collapse; previous app regains focus.
-- [ ] Hover expansion works when enabled.
 - [ ] Escape collapses.
 - [ ] Full workspace uses the same welded surface, not a second floating window.
 - [ ] Settings opens inside the notch workspace from Cmd+, the app menu, and the status menu.

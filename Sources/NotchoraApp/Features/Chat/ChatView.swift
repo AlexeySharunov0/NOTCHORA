@@ -32,7 +32,11 @@ struct ChatView: View {
         }
         .background(Color.black)
         .onAppear {
+            if draft.isEmpty { draft = model.composerDraft }
             model.composerFocusRequest += 1
+        }
+        .onChange(of: draft) { _, text in
+            model.composerDraft = text
         }
     }
 

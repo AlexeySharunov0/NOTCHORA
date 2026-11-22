@@ -16,7 +16,6 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
     private var hasWindow = false
     private var containerTask: Task<Void, Never>?
     private var pointerMonitor: Any?
-    private var hoverOpenTask: Task<Void, Never>?
 
     init(model: AppModel) {
         self.model = model
@@ -78,8 +77,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
             NSEvent.removeMonitor(pointerMonitor)
             self.pointerMonitor = nil
         }
-        hoverOpenTask?.cancel()
-        hoverOpenTask = nil
+        model.isNotchHovered = false
     }
 
     private func handlePointer(_ event: NSEvent) {
@@ -88,31 +86,23 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         let frame = currentScreen.frame
         let height = max(environment.topRailHeight, NotchGeometry.compactHeightWithNotch)
         let hotZone = NSRect(
-            x: frame.midX - environment.notchWidth / 2 - 10,
+            x: frame.midX - environment.notchWidth / 2 - NotchGeometry.hoverPreviewExtra / 2,
             y: frame.maxY - height - 3,
-            width: environment.notchWidth + 20,
+            width: environment.notchWidth + NotchGeometry.hoverPreviewExtra,
             height: height + 5
         )
         guard hotZone.contains(point) else {
-            hoverOpenTask?.cancel()
-            hoverOpenTask = nil
+            model.isNotchHovered = false
             return
         }
 
         if event.type == .leftMouseDown {
-            hoverOpenTask?.cancel()
-            hoverOpenTask = nil
+            model.isNotchHovered = false
             model.openPanel()
             return
         }
 
-        guard model.settings.hoverToExpand, hoverOpenTask == nil else { return }
-        hoverOpenTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(220))
-            guard let self, !Task.isCancelled, self.currentPresentation == .compact else { return }
-            self.hoverOpenTask = nil
-            self.model.openPanel()
-        }
+        model.isNotchHovered = model.settings.hoverToExpand
     }
 
     @available(*, unavailable)

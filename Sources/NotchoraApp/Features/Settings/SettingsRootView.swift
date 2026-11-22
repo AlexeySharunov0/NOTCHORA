@@ -351,12 +351,12 @@ private struct GeneralSettingsView: View {
                 }
             }
 
-            SettingsSection(title: "Notch", footer: "Hover expansion expands the panel after a short delay. Disable it if you prefer click-only activation.") {
+            SettingsSection(title: "Notch", footer: "Hovering slightly widens the cutout so you can see the hit target. Click to open.") {
                 SettingsRow {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Expand on hover")
+                        Text("Hover preview")
                             .font(.nSmall)
-                        Text("Clicking the notch always works.")
+                        Text("Slightly widen the notch under the pointer; click to open.")
                             .font(.nCaptionRegular)
                             .foregroundStyle(Color.nTextTertiary)
                     }

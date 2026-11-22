@@ -43,7 +43,7 @@ if kill -0 "$PID" 2>/dev/null; then
 fi
 
 EXPECTED=(
-  01-compact.png 02-onboarding.png 03-chat-dark.png 04-chat-light.png
+  01-compact.png 01b-hover-preview.png 02-onboarding.png 03-chat-dark.png 04-chat-light.png
   05-workspace-dark.png 06-workspace-light.png 07-history.png 08-tasks.png
   09-workflows.png 10-multi-ai.png 11-compact-active.png
   12-settings-general.png 13-settings-providers.png 14-settings-privacy.png
@@ -80,7 +80,7 @@ if ! grep -q "firstResponder: NSTextView" "$STATUS"; then
   exit 1
 fi
 
-for name in 01-compact 02-onboarding 03-chat-dark 05-workspace-dark 12-settings-general 16-expand-70ms 17-expand-170ms 20-collapse-80ms 21-collapse-200ms 23-collapse-final; do
+for name in 01-compact 01b-hover-preview 02-onboarding 03-chat-dark 05-workspace-dark 12-settings-general 16-expand-70ms 17-expand-170ms 20-collapse-80ms 21-collapse-200ms 23-collapse-final; do
   swift "$ROOT/Scripts/validate-notch-shape.swift" "$ROOT/build/screenshots/qa/$name.png" >/dev/null
 done
 

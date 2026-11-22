@@ -50,6 +50,8 @@ final class AppModel {
     var isSystemPromptPresented = false
     var isScreenCapturePickerPresented = false
     var isModelPickerPresented = false
+    var isNotchHovered = false
+    var composerDraft = ""
     var presentationAnimationEnabled = true
 
     @ObservationIgnored var didBootstrap = false
@@ -172,6 +174,7 @@ final class AppModel {
             }
             composerFocusRequest += 1
         }
+        isNotchHovered = false
         if newValue == .compact || newValue == .hidden {
             if voicePresented {
                 voiceSession.cancel()

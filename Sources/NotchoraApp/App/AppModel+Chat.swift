@@ -6,8 +6,13 @@ extension AppModel {
         guard let conversationID = selectedConversationID else { return }
         let provider = conversation(id: conversationID)?.selection.providerID ?? activeSelection.providerID
         guard hasAPIKey(provider) else {
-            showToast(.warning("No API key for \(provider.displayName)", detail: "Connect a provider in Settings to send messages."))
-            requestSettings(.providers)
+            showToast(ToastMessage(
+                kind: .warning,
+                title: "No API key for \(provider.displayName)",
+                detail: "Connect a provider to send messages. Nothing was sent.",
+                actionTitle: "Connect",
+                action: { [weak self] in self?.requestSettings(.providers) }
+            ))
             return
         }
         guard !isGenerating(conversationID: conversationID) else {
@@ -55,12 +60,17 @@ extension AppModel {
     }
 
     func performSelectionAction(_ action: SelectionAction, offer: SelectedTextOffer) {
-        selectedTextOffer = nil
         guard hasAPIKey(activeSelection.providerID) else {
-            showToast(.warning("Connect a provider first"))
-            requestSettings(.providers)
+            showToast(ToastMessage(
+                kind: .warning,
+                title: "Connect a provider first",
+                detail: "Your selected text is still here. Connect a provider to use it.",
+                actionTitle: "Connect",
+                action: { [weak self] in self?.requestSettings(.providers) }
+            ))
             return
         }
+        selectedTextOffer = nil
         guard let instruction = action.instruction else {
             contextDraft = ContextDraft(
                 source: .selectedText,

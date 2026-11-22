@@ -82,6 +82,13 @@ struct NotchRootView: View {
             displayedSurfaceWidth = targetSurfaceSize.width
             displayedSurfaceHeight = targetSurfaceSize.height
         }
+        .onChange(of: model.isNotchHovered) { _, _ in
+            guard model.presentation == .compact else { return }
+            withAnimation(.easeOut(duration: 0.16)) {
+                displayedSurfaceWidth = targetSurfaceSize.width
+                displayedSurfaceHeight = targetSurfaceSize.height
+            }
+        }
         .onDisappear {
             revealTask?.cancel()
             collapseTask?.cancel()
@@ -121,7 +128,11 @@ struct NotchRootView: View {
     }
 
     private var targetSurfaceSize: CGSize {
-        NotchGeometry.surfaceSize(for: model.presentation, environment: environment)
+        var size = NotchGeometry.surfaceSize(for: model.presentation, environment: environment)
+        if model.presentation == .compact, model.isNotchHovered {
+            size.width = min(size.width + NotchGeometry.hoverPreviewExtra, environment.screenWidth)
+        }
+        return size
     }
 
     private var surfaceWidthAnimation: Animation? {
@@ -217,9 +228,6 @@ struct CompactNotchView: View {
     let model: AppModel
     let environment: NotchEnvironment
 
-    @State private var hovered = false
-    @State private var hoverTask: Task<Void, Never>?
-
     private var isGenerating: Bool { model.isGeneratingCurrent }
     private var hasTasks: Bool { model.runningTaskCount > 0 }
 
@@ -234,20 +242,13 @@ struct CompactNotchView: View {
         .contentShape(Rectangle())
         .onTapGesture { model.openPanel() }
         .onHover { hovering in
-            hovered = hovering
-            hoverTask?.cancel()
-            guard hovering, model.settings.hoverToExpand else { return }
-            hoverTask = Task {
-                try? await Task.sleep(for: .milliseconds(260))
-                guard !Task.isCancelled, model.presentation == .compact else { return }
-                model.openPanel()
-            }
+            guard model.presentation == .compact else { return }
+            model.isNotchHovered = hovering && model.settings.hoverToExpand
         }
         .help("Open NOTCHORA · \(model.settings.binding(for: .openPanel)?.combo.displayString ?? "⌥Space")")
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("NOTCHORA. Open AI control center.")
         .accessibilityAddTraits(.isButton)
-        .onDisappear { hoverTask?.cancel() }
     }
 
     /// The software compact surface is exactly the hardware cutout. It adds no

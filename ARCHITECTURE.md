@@ -88,7 +88,7 @@ Expansion saves the previously frontmost app, activates NOTCHORA so text fields 
 ```mermaid
 stateDiagram-v2
     [*] --> Compact
-    Compact --> Expanded: click / shortcut / hover
+    Compact --> Expanded: click / shortcut
     Expanded --> Workspace: expand button
     Workspace --> Expanded: collapse button
     Expanded --> Compact: Escape / click outside / collapse
@@ -98,6 +98,8 @@ stateDiagram-v2
     Workspace --> Hidden: hide shortcut
     Hidden --> Expanded: open shortcut / menu
 ```
+
+While compact, a pointer-position monitor widens the visible surface by 28 pt as a hit-target preview; it never opens by hover, and a click opens the panel.
 
 The window container is enlarged immediately when the surface needs room and trimmed back only after the spring has settled. The visible black shape itself is animated by SwiftUI from separate width and height states: width springs first, then height settles, so it stretches sideways out of the cutout before descending. Content is faded in after the growth starts, and the compact content is hidden while the shape collapses. This avoids a resized-window flash, a rectangular snapshot, or a separate panel appearing under the notch.
 

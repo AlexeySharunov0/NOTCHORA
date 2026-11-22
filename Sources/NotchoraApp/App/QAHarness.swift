@@ -33,6 +33,12 @@ enum QAHarness {
         try? await Task.sleep(for: .milliseconds(500))
         capture(panel, name: "01-compact", directory: outputDirectory)
 
+        model.isNotchHovered = true
+        try? await Task.sleep(for: .milliseconds(300))
+        capture(panel, name: "01b-hover-preview", directory: outputDirectory)
+        model.isNotchHovered = false
+        try? await Task.sleep(for: .milliseconds(250))
+
         model.setPresentation(.expanded, animated: false)
         try? await Task.sleep(for: .milliseconds(700))
         capture(panel, name: "02-onboarding", directory: outputDirectory)

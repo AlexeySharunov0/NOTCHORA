@@ -37,6 +37,7 @@ final class NotchEnvironment {
 enum NotchGeometry {
     static let compactHeightWithNotch: CGFloat = 32
     static let fallbackCompactHeight: CGFloat = 34
+    static let hoverPreviewExtra: CGFloat = 28
     static let expandedSize = CGSize(width: 860, height: 540)
     static let workspaceSize = CGSize(width: 1180, height: 700)
 
@@ -79,7 +80,7 @@ enum NotchGeometry {
         case .hidden:
             return .zero
         case .compact:
-            let width = compactWidth(on: screen)
+            let width = min(compactWidth(on: screen) + hoverPreviewExtra, screen.frame.width)
             let height = notched ? compactHeightWithNotch : fallbackCompactHeight
             let top = notched ? screen.frame.maxY : visible.maxY - 4
             return centeredFrame(width: width, height: height, top: top, screen: screen)

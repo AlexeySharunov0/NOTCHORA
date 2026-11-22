@@ -55,7 +55,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 - The package is a SwiftPM executable, not a hand-written `.xcodeproj` with a UI-test target.
 - UI coverage is provided by:
   - a debug screenshot harness that launches the real app and drives actual presentation/routes/settings;
-  - 29 captured states, including intermediate expansion/collapse frames and in-notch overlays;
+  - 30 captured states, including intermediate expansion/collapse frames and in-notch overlays;
   - a human manual QA matrix.
 - This is not equivalent to automated click/keyboard UI tests. It is documented rather than presented as XCUITest.
 

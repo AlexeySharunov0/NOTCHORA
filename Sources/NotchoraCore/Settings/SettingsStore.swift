@@ -53,7 +53,7 @@ public final class SettingsStore {
         maxStoredConversations = defaults.object(forKey: Key.historyLimit) as? Int ?? 200
         showMenuBarItem = defaults.object(forKey: Key.menuBarItem) as? Bool ?? true
         displayPreference = DisplayPreference(rawValue: defaults.string(forKey: Key.displayPreference) ?? "") ?? .activeScreen
-        hoverToExpand = defaults.object(forKey: Key.hoverToExpand) as? Bool ?? false
+        hoverToExpand = defaults.object(forKey: Key.hoverToExpand) as? Bool ?? true
         hasCompletedOnboarding = defaults.bool(forKey: Key.onboarding)
 
         if let data = defaults.data(forKey: Key.shortcuts),
@@ -104,7 +104,7 @@ public final class SettingsStore {
         temperature = 0.7
         maxOutputTokens = 0
         displayPreference = .activeScreen
-        hoverToExpand = false
+        hoverToExpand = true
     }
 
     public func resetPrivacySettings() {

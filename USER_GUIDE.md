@@ -8,7 +8,7 @@ The compact state is **exactly the physical MacBook notch**: no ears, chin, logo
 
 - press **⌥Space**;
 - click the NOTCHORA item in the menu bar and choose **Open NOTCHORA**;
-- click or hover the cutout area itself. NOTCHORA watches only the pointer position in a small zone around the cutout; this is optional and may depend on how macOS delivers pointer events over the camera housing.
+- click the cutout area itself. Hovering it first slightly widens the black shape so you can see the hit target; clicking then opens the panel. This is optional and may depend on how macOS delivers pointer events over the camera housing.
 
 The surface stretches horizontally out of the notch and settles into the expanded workspace. Press **Esc** or click outside to collapse.
 
@@ -109,7 +109,7 @@ If selected text is unavailable, use the Clipboard fallback. NOTCHORA never simu
 - No analytics or telemetry.
 - No hidden clipboard, microphone, or screen capture.
 - Delete keys and local data under **Settings → Privacy**.
-- While compact, NOTCHORA checks only the current pointer position around the cutout to support click/hover opening; it does not store or send pointer history.
+- While compact, NOTCHORA checks only the current pointer position around the cutout to show the hover preview and handle clicks; it does not store or send pointer history.
 
 ## 12. Default shortcuts
 
@@ -128,6 +128,7 @@ Change them in **Settings → Shortcuts**. A shortcut without Command, Option, o
 
 - **The notch looks slightly larger than the hardware** — compact is measured from `safeAreaInsets.top` and the auxiliary top areas; on the test 14-inch display this is 185×32 pt. If your Mac needs an inset, report the display model and a screenshot.
 - **Nothing happens when clicking the notch** — use **⌥Space** or the menu-bar item; the exact hardware cutout may not deliver pointer events on every Mac.
+- **I pressed Return without a key and nothing was sent** — the draft stays in the composer and a Connect toast appears. NOTCHORA no longer jumps to AI Providers on its own; press **Connect** in the toast or open Settings manually. The draft is preserved when you return to Chat.
 - **No API key banner** — connect the selected provider in Settings.
 - **Invalid key** — verify the key, provider, and **Test Connection**.
 - **Rate limit** — wait, retry, or switch model/provider.
