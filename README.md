@@ -149,6 +149,7 @@ NOTCHORA/
 ├── Scripts/                 # build, icon generation, visual QA
 ├── Resources/Info.plist
 ├── Docs/                    # screenshots and supporting documentation
+├── USER_GUIDE.md
 ├── ARCHITECTURE.md
 ├── INSTALLATION.md
 ├── TESTING.md
@@ -179,7 +180,7 @@ swift test
 ./Scripts/visual-qa.sh
 ```
 
-See [TESTING.md](TESTING.md) for the full test matrix and manual QA checklist.
+See [USER_GUIDE.md](USER_GUIDE.md) for step-by-step usage and [TESTING.md](TESTING.md) for the full test matrix and manual QA checklist.
 
 ## Security and privacy
 

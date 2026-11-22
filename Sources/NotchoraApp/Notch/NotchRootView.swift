@@ -159,7 +159,7 @@ struct NotchRootView: View {
         if model.presentation == .compact {
             return NotchSurfaceShape(
                 topRadius: environment.hasPhysicalNotch ? 0 : 17,
-                bottomRadius: environment.hasPhysicalNotch ? 10 : 17
+                bottomRadius: environment.hasPhysicalNotch ? 8 : 17
             )
         }
         return NotchSurfaceShape(
@@ -390,7 +390,7 @@ struct ExpandedRail: View {
     var workspace: Bool
 
     private var railHeight: CGFloat {
-        environment.hasPhysicalNotch ? max(environment.topRailHeight, 37) : 40
+        environment.hasPhysicalNotch ? max(environment.topRailHeight, 32) : 40
     }
 
     var body: some View {

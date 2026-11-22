@@ -79,7 +79,7 @@ The panel is only a transparent container. Inside it, `NotchRootView` renders th
 - compact, expanded, and workspace surface sizes;
 - the window container frame used while the shape animates.
 
-On notched displays the compact surface is exactly the measured hardware notch rectangle (width and safe-area height), with the same black fill and a 10 pt lower-corner radius. It adds no clickable ears or chin. On displays without a notch, a compact black pill is positioned just below the menu bar with rounded top and bottom corners.
+On notched displays the compact surface is exactly the measured hardware notch rectangle (width and safe-area height), with the same black fill and a 8 pt lower-corner radius. It adds no clickable ears or chin. On displays without a notch, a compact black pill is positioned just below the menu bar with rounded top and bottom corners.
 
 Expansion saves the previously frontmost app, activates NOTCHORA so text fields and VoiceOver are reliable, and restores the previous app on collapse only when NOTCHORA is still frontmost. This avoids focus theft while keeping the panel usable.
 

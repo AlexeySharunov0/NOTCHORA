@@ -143,7 +143,7 @@ The script fails if any expected screenshot is missing or empty, if global short
 
 ### Visual QA observations
 
-- The compact surface is exactly the measured hardware notch rectangle (185×37 pt on the test MacBook), with no ears, chin, logo, line, or activity counter. The software surface is intentionally invisible; opening is via the shortcut, menu-bar item, or the cutout area where pointer events reach the panel.
+- The compact surface is exactly the measured hardware notch rectangle (185×32 pt on the test MacBook), with no ears, chin, logo, line, or activity counter. The software surface is intentionally invisible; opening is via the shortcut, menu-bar item, or the cutout area where pointer events reach the panel.
 - Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 860×540 points.
 - The workspace was inspected at 1180×700 points.
 - The surface was captured at 70 ms, 170 ms, 350 ms, and settled during expansion, and at 80/200/400 ms during collapse. A Swift validator confirms that every sampled surface edge is opaque black, the top edge is welded, the growing shape stays horizontally centered, and the lower corners are transparent.

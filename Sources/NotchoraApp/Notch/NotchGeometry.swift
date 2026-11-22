@@ -26,7 +26,7 @@ final class NotchEnvironment {
         hasPhysicalNotch = screen.safeAreaInsets.top > 0 && left != nil && right != nil
         isFallback = !hasPhysicalNotch
         notchWidth = detectedWidth
-        topRailHeight = max(screen.safeAreaInsets.top, hasPhysicalNotch ? 37 : 0)
+        topRailHeight = max(screen.safeAreaInsets.top, hasPhysicalNotch ? 32 : 0)
         screenWidth = screen.frame.width
         screenHeight = screen.frame.height
         screenName = screen.localizedName
@@ -35,7 +35,7 @@ final class NotchEnvironment {
 
 @MainActor
 enum NotchGeometry {
-    static let compactHeightWithNotch: CGFloat = 37
+    static let compactHeightWithNotch: CGFloat = 32
     static let fallbackCompactHeight: CGFloat = 34
     static let expandedSize = CGSize(width: 860, height: 540)
     static let workspaceSize = CGSize(width: 1180, height: 700)
