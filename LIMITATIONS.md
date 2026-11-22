@@ -55,7 +55,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 - The package is a SwiftPM executable, not a hand-written `.xcodeproj` with a UI-test target.
 - UI coverage is provided by:
   - a debug screenshot harness that launches the real app and drives actual presentation/routes/settings;
-  - 30 captured states, including intermediate expansion/collapse frames and in-notch overlays;
+  - 31 captured states, including intermediate expansion/collapse frames and in-notch overlays;
   - a human manual QA matrix.
 - This is not equivalent to automated click/keyboard UI tests. It is documented rather than presented as XCUITest.
 
@@ -84,6 +84,12 @@ These paths are implemented but could not be exercised end-to-end on the build m
 - All modal UI opens inside the panel; there are no app sheets or model-picker popovers. Native menus and `NSOpenPanel` remain system windows.
 - The notch surface is always black. The appearance preference affects system menus and AppKit controls, not the surface color.
 - Increase Contrast can make native control outlines more prominent, but the surface remains opaque black.
+
+### Keychain access
+
+- API keys are read once at launch and cached in memory for the process; messages do not re-open Keychain.
+- macOS may re-prompt after the app is rebuilt because the development build is ad-hoc signed. “Always Allow” persists for the same signed build.
+- If access is denied, the cached state avoids retrying the prompt for every message; reconnect the key from Settings to store it again.
 
 ### Opaque black surface
 

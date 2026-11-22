@@ -8,6 +8,9 @@ extension AppModel {
         didBootstrap = true
 
         Task {
+            // Warm credentials once at launch. Reads are cached for the rest of
+            // the process, so sending a message never asks for Keychain access.
+            keyStore.preload()
             var loadedState: PersistedState?
             do {
                 loadedState = try await stateStore.load()

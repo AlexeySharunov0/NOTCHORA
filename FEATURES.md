@@ -9,6 +9,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Fallback compact pill on non-notched displays.
 - Open from the exact-notch compact state with the global shortcut or menu-bar item; the cutout area also accepts pointer events where macOS delivers them.
 - Hover preview: slightly widens the cutout under the pointer; click opens.
+- Minimal generating HUD: when collapsed during a stream, a 213×58 window with open, spinner/status, and stop only.
 - One continuous opaque-black surface that grows downward and outward from the physical notch.
 - No material, blur, glass, border, drop shadow, or separate floating workspace window.
 - Spring shape animation with content fading in after expansion begins.
@@ -323,7 +324,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Keychain abstraction tests.
 - Task/workflow tests.
 - Settings persistence tests.
-- Debug visual QA harness with 30 screenshots, including expansion/collapse frames and overlays.
+- Debug visual QA harness with 31 screenshots, including expansion/collapse frames and overlays.
 - Monochrome black-and-white app icon.
 - Pixel validation of the opaque-black, welded, centered notch shape.
 - Reduced-motion shape checks.

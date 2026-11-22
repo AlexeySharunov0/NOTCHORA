@@ -23,17 +23,30 @@ public protocol APIKeyStore: Sendable {
     func load(for provider: AIProviderID) throws -> String?
     func delete(for provider: AIProviderID) throws
     func hasKey(for provider: AIProviderID) -> Bool
+    /// Warm the in-memory cache at launch so Keychain access is requested
+    /// once, not on the first message.
+    func preload()
 }
 
 /// The only place API keys are persisted. The service name is stable so keys
 /// survive app updates; accounts are one per provider.
-public struct SystemKeychainStore: APIKeyStore, Sendable {
+public final class SystemKeychainStore: APIKeyStore, @unchecked Sendable {
     public let service: String
     public let accessGroup: String?
+
+    private let lock = NSLock()
+    private var cached: [AIProviderID: String] = [:]
+    private var loaded: Set<AIProviderID> = []
 
     public init(service: String = "com.notchora.credentials", accessGroup: String? = nil) {
         self.service = service
         self.accessGroup = accessGroup
+    }
+
+    public func preload() {
+        for provider in AIProviderID.allCases {
+            _ = try? load(for: provider)
+        }
     }
 
     public func save(_ key: String, for provider: AIProviderID) throws {
@@ -47,7 +60,7 @@ public struct SystemKeychainStore: APIKeyStore, Sendable {
         let status = SecItemAdd(query as CFDictionary, nil)
         switch status {
         case errSecSuccess:
-            return
+            remember(trimmed, for: provider)
         case errSecDuplicateItem:
             let updateQuery = baseQuery(provider)
             let attributes: [String: Any] = [
@@ -58,12 +71,17 @@ public struct SystemKeychainStore: APIKeyStore, Sendable {
             guard updateStatus == errSecSuccess else {
                 throw KeychainError.unexpectedStatus(updateStatus)
             }
+            remember(trimmed, for: provider)
         default:
             throw KeychainError.unexpectedStatus(status)
         }
     }
 
     public func load(for provider: AIProviderID) throws -> String? {
+        if let value = cachedValue(for: provider) {
+            return value
+        }
+
         var query = baseQuery(provider)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -75,10 +93,14 @@ public struct SystemKeychainStore: APIKeyStore, Sendable {
             guard let data = result as? Data, let value = String(data: data, encoding: .utf8) else {
                 throw KeychainError.dataCorrupted
             }
+            remember(value, for: provider)
             return value
         case errSecItemNotFound:
+            remember(nil, for: provider)
             return nil
         default:
+            // A denied/cancelled prompt must not be retried for every message.
+            remember(nil, for: provider)
             throw KeychainError.unexpectedStatus(status)
         }
     }
@@ -88,13 +110,32 @@ public struct SystemKeychainStore: APIKeyStore, Sendable {
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw KeychainError.unexpectedStatus(status)
         }
+        remember(nil, for: provider)
     }
 
     public func hasKey(for provider: AIProviderID) -> Bool {
-        var query = baseQuery(provider)
-        query[kSecReturnData as String] = false
-        query[kSecMatchLimit as String] = kSecMatchLimitOne
-        return SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
+        if let value = cachedValue(for: provider) {
+            return value?.isEmpty == false
+        }
+        return (try? load(for: provider))?.isEmpty == false
+    }
+
+    private func cachedValue(for provider: AIProviderID) -> String?? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard loaded.contains(provider) else { return nil }
+        return .some(cached[provider])
+    }
+
+    private func remember(_ value: String?, for provider: AIProviderID) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let value, !value.isEmpty {
+            cached[provider] = value
+        } else {
+            cached[provider] = nil
+        }
+        loaded.insert(provider)
     }
 
     private func baseQuery(_ provider: AIProviderID) -> [String: Any] {
@@ -142,4 +183,6 @@ public final class InMemoryKeychainStore: APIKeyStore, @unchecked Sendable {
         defer { lock.unlock() }
         return values[provider] != nil
     }
+
+    public func preload() {}
 }

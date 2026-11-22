@@ -135,7 +135,7 @@ The debug-only `QAHarness` is activated by `NOTCHORA_QA=1`. It:
 7. opens the model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor as in-notch overlays;
 8. captures intermediate expansion and collapse frames of the actual surface;
 9. terminates with a success code;
-10. writes 30 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
+10. writes 31 PNG files and a `runtime-status.txt` report under `build/screenshots/qa`.
 
 The harness uses `NSView.cacheDisplay` so it does not need Screen Recording permission. It is compiled out of release builds. It never touches the real Keychain or Application Support because it uses an in-memory key store and `NOTCHORA_STATE_PATH=build/qa-state.json`.
 
@@ -144,8 +144,8 @@ The script fails if any expected screenshot is missing or empty, if global short
 ### Visual QA observations
 
 - The compact surface is exactly the measured hardware notch rectangle (185×32 pt on the test MacBook), with no ears, chin, logo, line, or activity counter. The software surface is intentionally invisible; opening is via the shortcut, menu-bar item, or the cutout area where pointer events reach the panel.
-- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 860×540 points.
-- The workspace was inspected at 1180×700 points.
+- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 1020×680 points.
+- The workspace was inspected at 1280×820 points.
 - The surface was captured at 70 ms, 170 ms, 350 ms, and settled during expansion, and at 80/200/400 ms during collapse. A Swift validator confirms that every sampled surface edge is opaque black, the top edge is welded, the growing shape stays horizontally centered, and the lower corners are transparent.
 - Settings, model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor were verified as in-notch surfaces rather than separate windows.
 - The former translucent card/material styling was removed; content now sits directly on opaque black.
@@ -171,6 +171,7 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 - [ ] Press ⌥Space or use the menu-bar item to expand from the exact-notch compact state.
 - [ ] Hover the cutout: it widens slightly (185 → 213 pt) but does not open; click opens.
 - [ ] Press Return in the composer without a provider key: the draft stays, a Connect toast appears, the route stays on Chat, and the draft survives opening Settings and returning.
+- [ ] While a model is generating, collapse the notch: a small 213×58 HUD shows only open, generating, and stop; stop cancels, the rest opens the chat.
 - [ ] Click outside → collapse; previous app regains focus.
 - [ ] Escape collapses.
 - [ ] Full workspace uses the same welded surface, not a second floating window.

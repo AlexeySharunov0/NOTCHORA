@@ -38,8 +38,9 @@ enum NotchGeometry {
     static let compactHeightWithNotch: CGFloat = 32
     static let fallbackCompactHeight: CGFloat = 34
     static let hoverPreviewExtra: CGFloat = 28
-    static let expandedSize = CGSize(width: 860, height: 540)
-    static let workspaceSize = CGSize(width: 1180, height: 700)
+    static let workingHeight: CGFloat = 58
+    static let expandedSize = CGSize(width: 1020, height: 680)
+    static let workspaceSize = CGSize(width: 1280, height: 820)
 
     static func preferredScreen(settings: SettingsStore) -> NSScreen {
         let screens = NSScreen.screens
@@ -81,7 +82,7 @@ enum NotchGeometry {
             return .zero
         case .compact:
             let width = min(compactWidth(on: screen) + hoverPreviewExtra, screen.frame.width)
-            let height = notched ? compactHeightWithNotch : fallbackCompactHeight
+            let height = notched ? max(compactHeightWithNotch, workingHeight) : fallbackCompactHeight
             let top = notched ? screen.frame.maxY : visible.maxY - 4
             return centeredFrame(width: width, height: height, top: top, screen: screen)
         case .expanded:

@@ -36,7 +36,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
-        panel.level = .statusBar
+        panel.level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.hidesOnDeactivate = false
         panel.isMovable = false
@@ -84,12 +84,12 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         guard currentPresentation == .compact, hasWindow else { return }
         let point = NSEvent.mouseLocation
         let frame = currentScreen.frame
-        let height = max(environment.topRailHeight, NotchGeometry.compactHeightWithNotch)
+        let height = max(environment.topRailHeight, NotchGeometry.workingHeight)
         let hotZone = NSRect(
             x: frame.midX - environment.notchWidth / 2 - NotchGeometry.hoverPreviewExtra / 2,
-            y: frame.maxY - height - 3,
+            y: frame.maxY - height,
             width: environment.notchWidth + NotchGeometry.hoverPreviewExtra,
-            height: height + 5
+            height: height
         )
         guard hotZone.contains(point) else {
             model.isNotchHovered = false
@@ -97,12 +97,35 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         }
 
         if event.type == .leftMouseDown {
+            if model.isGeneratingCurrent {
+                let stopZone = NSRect(
+                    x: hotZone.maxX - 52,
+                    y: hotZone.minY,
+                    width: 52,
+                    height: height
+                )
+                if stopZone.contains(point) {
+                    model.isNotchHovered = false
+                    model.cancelGeneration()
+                    return
+                }
+            }
             model.isNotchHovered = false
             model.openPanel()
             return
         }
 
-        model.isNotchHovered = model.settings.hoverToExpand
+        if model.isGeneratingCurrent {
+            model.isNotchHovered = false
+            return
+        }
+        let previewZone = NSRect(
+            x: hotZone.minX,
+            y: frame.maxY - NotchGeometry.compactHeightWithNotch,
+            width: hotZone.width,
+            height: NotchGeometry.compactHeightWithNotch
+        )
+        model.isNotchHovered = model.settings.hoverToExpand && previewZone.contains(point)
     }
 
     @available(*, unavailable)

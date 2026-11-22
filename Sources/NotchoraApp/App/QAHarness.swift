@@ -58,6 +58,28 @@ enum QAHarness {
             encoding: .utf8
         )
 
+        // Minimal working HUD: a streaming message while the surface is compact.
+        if var conversation = model.currentConversation {
+            conversation.messages.append(ChatMessage(
+                role: .assistant,
+                content: "",
+                providerID: .openAI,
+                modelID: "gpt-4.1",
+                status: .streaming
+            ))
+            model.conversations = [conversation]
+            model.selectedConversationID = conversation.id
+        }
+        model.setPresentation(.compact, animated: false)
+        try? await Task.sleep(for: .milliseconds(400))
+        capture(panel, name: "01c-working-hud", directory: outputDirectory)
+        if var conversation = model.currentConversation {
+            conversation.messages.removeAll { $0.role == .assistant && $0.status == .streaming }
+            model.conversations = [conversation]
+        }
+        model.setPresentation(.expanded, animated: false)
+        try? await Task.sleep(for: .milliseconds(300))
+
         for provider in AIProviderID.allCases {
             try? model.keyStore.save("qa-placeholder", for: provider)
         }

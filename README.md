@@ -58,6 +58,10 @@ Most AI work is fragmented across browser tabs and separate desktop apps. NOTCHO
 |---|---|---|
 | ![Model picker](Docs/Screenshots/model-picker.jpg) | ![Handoff](Docs/Screenshots/handoff.jpg) | ![Workflow editor](Docs/Screenshots/workflow-editor.jpg) |
 
+| Minimal generating HUD |
+|---|
+| ![Working HUD](Docs/Screenshots/work-hud.png) |
+
 The notch is deliberately black in every system appearance so it merges with the hardware cutout. The screenshots come from the debug-only visual QA harness with fixture conversations and placeholder connected keys. See [TESTING.md](TESTING.md) and [QA.md](QA.md).
 
 ## Requirements
@@ -168,7 +172,7 @@ make build   # debug build
 make test    # XCTest suite
 make app     # release .app bundle
 make dmg     # release .app bundle + DMG
-make qa      # debug visual QA: 30 screenshots, including shape-growth frames
+make qa      # debug visual QA: 31 screenshots, including shape-growth frames
 make watch   # rebuild + relaunch on source changes while editing in Cursor/DSH
 ```
 

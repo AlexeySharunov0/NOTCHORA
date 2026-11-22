@@ -68,7 +68,7 @@ guard isBlackOpaque(centerX, 1) else { fail("top center is not opaque black") }
 guard alpha(centerX, bottom - 2) >= 0.995 else { fail("bottom center is not opaque") }
 
 // The left edge of the surface, away from the rounded lower corner.
-for y in stride(from: 6, through: max(8, bottom - 70), by: 4) where !isBlackOpaque(left + 2, y) {
+for y in stride(from: 6, through: max(8, bottom - 70), by: 4) where !isBlackOpaque(left + 1, y) {
     fail("left surface edge is not opaque black at y=\(y)")
 }
 

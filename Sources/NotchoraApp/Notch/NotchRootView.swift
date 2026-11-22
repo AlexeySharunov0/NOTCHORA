@@ -89,6 +89,13 @@ struct NotchRootView: View {
                 displayedSurfaceHeight = targetSurfaceSize.height
             }
         }
+        .onChange(of: model.isGeneratingCurrent) { _, _ in
+            guard model.presentation == .compact else { return }
+            withAnimation(.spring(response: 0.24, dampingFraction: 0.86)) {
+                displayedSurfaceWidth = targetSurfaceSize.width
+                displayedSurfaceHeight = targetSurfaceSize.height
+            }
+        }
         .onDisappear {
             revealTask?.cancel()
             collapseTask?.cancel()
@@ -129,7 +136,11 @@ struct NotchRootView: View {
 
     private var targetSurfaceSize: CGSize {
         var size = NotchGeometry.surfaceSize(for: model.presentation, environment: environment)
-        if model.presentation == .compact, model.isNotchHovered {
+        guard model.presentation == .compact else { return size }
+        if environment.hasPhysicalNotch, model.isGeneratingCurrent {
+            size.width = min(size.width + NotchGeometry.hoverPreviewExtra, environment.screenWidth)
+            size.height = NotchGeometry.workingHeight
+        } else if model.isNotchHovered {
             size.width = min(size.width + NotchGeometry.hoverPreviewExtra, environment.screenWidth)
         }
         return size
@@ -146,7 +157,7 @@ struct NotchRootView: View {
         guard model.presentationAnimationEnabled, model.settings.animationsEnabled, !reduceMotion else {
             return nil
         }
-        return .spring(response: 0.72, dampingFraction: 0.90, blendDuration: 0.16)
+        return .spring(response: 0.62, dampingFraction: 0.90, blendDuration: 0.16)
     }
 
     private func animateSurface(to target: CGSize) {
@@ -170,7 +181,7 @@ struct NotchRootView: View {
         if model.presentation == .compact {
             return NotchSurfaceShape(
                 topRadius: environment.hasPhysicalNotch ? 0 : 17,
-                bottomRadius: environment.hasPhysicalNotch ? 8 : 17
+                bottomRadius: environment.hasPhysicalNotch ? (model.isGeneratingCurrent ? 14 : 8) : 17
             )
         }
         return NotchSurfaceShape(
@@ -234,13 +245,21 @@ struct CompactNotchView: View {
     var body: some View {
         Group {
             if environment.hasPhysicalNotch {
-                physicalNotch
+                if model.isGeneratingCurrent {
+                    workingHUD
+                } else {
+                    physicalNotch
+                }
             } else {
                 fallbackPill
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture { model.openPanel() }
+        .onTapGesture {
+            if !model.isGeneratingCurrent {
+                model.openPanel()
+            }
+        }
         .onHover { hovering in
             guard model.presentation == .compact else { return }
             model.isNotchHovered = hovering && model.settings.hoverToExpand
@@ -258,6 +277,50 @@ struct CompactNotchView: View {
     /// the menu-bar item.
     private var physicalNotch: some View {
         Color.black
+    }
+
+    private var workingHUD: some View {
+        VStack(spacing: 0) {
+            Color.clear.frame(height: NotchGeometry.compactHeightWithNotch)
+            HStack(spacing: 7) {
+                Button {
+                    model.openPanel()
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(Color.white.opacity(0.52))
+                        .frame(width: 18, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .help("Open NOTCHORA")
+
+                Spinner()
+                    .scaleEffect(0.72)
+                    .frame(width: 12, height: 12)
+
+                Text("Generating")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.66))
+                    .lineLimit(1)
+
+                Spacer(minLength: 4)
+
+                Button {
+                    model.cancelGeneration()
+                } label: {
+                    Image(systemName: "stop.fill")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Color.white.opacity(0.86))
+                        .frame(width: 26, height: 24)
+                }
+                .buttonStyle(.borderless)
+                .help("Stop generating")
+            }
+            .padding(.horizontal, 10)
+            .frame(height: 26)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.black)
     }
 
     private var fallbackPill: some View {

@@ -124,7 +124,17 @@ If selected text is unavailable, use the Clipboard fallback. NOTCHORA never simu
 
 Change them in **Settings → Shortcuts**. A shortcut without Command, Option, or Control is rejected.
 
-## 13. Working from Cursor or DeepSeek Harness
+## 13. Minimal generating window
+
+If you collapse NOTCHORA while a model is still answering, the notch turns into a small **213 × 58 pt** working window:
+
+- chevron — open the full chat;
+- spinner + **Generating** — current state;
+- square stop button — cancel the stream.
+
+It contains only those controls. Clicking the rest of the small window opens the full chat. When generation finishes, it returns to the exact notch.
+
+## 14. Working from Cursor or DeepSeek Harness
 
 For development, run:
 
@@ -132,9 +142,9 @@ For development, run:
 make watch
 ```
 
-The script watches `Sources`, `Tests`, `Resources`, and `Package.swift`. After a save it rebuilds the app, relaunches it, and leaves it at the exact notch compact state. Press `⌥Space` to interact. The expanded window stays 860×540, so it does not take over the screen. This is a developer preview loop, not an embedded editor window.
+The script watches `Sources`, `Tests`, `Resources`, and `Package.swift`. After a save it rebuilds the app, relaunches it, and leaves it at the exact notch compact state. Press `⌥Space` to interact. The expanded window stays 1020×680, so it does not take over the screen. This is a developer preview loop, not an embedded editor window.
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 - **The notch looks slightly larger than the hardware** — compact is measured from `safeAreaInsets.top` and the auxiliary top areas; on the test 14-inch display this is 185×32 pt. If your Mac needs an inset, report the display model and a screenshot.
 - **Nothing happens when clicking the notch** — use **⌥Space** or the menu-bar item; the exact hardware cutout may not deliver pointer events on every Mac.
