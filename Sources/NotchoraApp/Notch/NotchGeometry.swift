@@ -35,10 +35,10 @@ final class NotchEnvironment {
 
 @MainActor
 enum NotchGeometry {
-    static let compactHeightWithNotch: CGFloat = 41
+    static let compactHeightWithNotch: CGFloat = 37
     static let fallbackCompactHeight: CGFloat = 34
-    static let expandedSize = CGSize(width: 620, height: 720)
-    static let workspaceSize = CGSize(width: 1180, height: 780)
+    static let expandedSize = CGSize(width: 860, height: 540)
+    static let workspaceSize = CGSize(width: 1180, height: 700)
 
     static func preferredScreen(settings: SettingsStore) -> NSScreen {
         let screens = NSScreen.screens
@@ -104,14 +104,15 @@ enum NotchGeometry {
         case .hidden:
             return .zero
         case .compact:
-            let extra: CGFloat = environment.hasPhysicalNotch ? 80 : 68
-            let width = min(
-                max(environment.notchWidth + extra, 250),
-                environment.screenWidth - 24
-            )
+            if environment.hasPhysicalNotch {
+                return CGSize(
+                    width: min(max(environment.notchWidth, 120), environment.screenWidth),
+                    height: compactHeightWithNotch
+                )
+            }
             return CGSize(
-                width: width,
-                height: environment.hasPhysicalNotch ? compactHeightWithNotch : fallbackCompactHeight
+                width: min(250, environment.screenWidth - 24),
+                height: fallbackCompactHeight
             )
         case .expanded:
             return CGSize(
@@ -133,8 +134,10 @@ enum NotchGeometry {
         } else {
             notchedWidth = 190
         }
-        let extra: CGFloat = isNotched(screen) ? 80 : 68
-        return min(max(notchedWidth + extra, 250), screen.frame.width - 24)
+        if isNotched(screen) {
+            return min(max(notchedWidth, 120), screen.frame.width)
+        }
+        return min(250, screen.frame.width - 24)
     }
 
     private static func centeredFrame(

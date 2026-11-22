@@ -15,6 +15,8 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
     private var currentScreen: NSScreen
     private var hasWindow = false
     private var containerTask: Task<Void, Never>?
+    private var pointerMonitor: Any?
+    private var hoverOpenTask: Task<Void, Never>?
 
     init(model: AppModel) {
         self.model = model
@@ -57,6 +59,62 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         panel.delegate = self
     }
 
+    /// The compact surface is exactly the hardware cutout, so there are no
+    /// software pixels to click. Observe only the pointer position in a small
+    /// invisible zone around the cutout, and only while compact.
+    private func startPointerMonitor() {
+        guard pointerMonitor == nil else { return }
+        pointerMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .mouseMoved]
+        ) { [weak self] event in
+            Task { @MainActor [weak self] in
+                self?.handlePointer(event)
+            }
+        }
+    }
+
+    private func stopPointerMonitor() {
+        if let pointerMonitor {
+            NSEvent.removeMonitor(pointerMonitor)
+            self.pointerMonitor = nil
+        }
+        hoverOpenTask?.cancel()
+        hoverOpenTask = nil
+    }
+
+    private func handlePointer(_ event: NSEvent) {
+        guard currentPresentation == .compact, hasWindow else { return }
+        let point = NSEvent.mouseLocation
+        let frame = currentScreen.frame
+        let height = max(environment.topRailHeight, NotchGeometry.compactHeightWithNotch)
+        let hotZone = NSRect(
+            x: frame.midX - environment.notchWidth / 2 - 10,
+            y: frame.maxY - height - 3,
+            width: environment.notchWidth + 20,
+            height: height + 5
+        )
+        guard hotZone.contains(point) else {
+            hoverOpenTask?.cancel()
+            hoverOpenTask = nil
+            return
+        }
+
+        if event.type == .leftMouseDown {
+            hoverOpenTask?.cancel()
+            hoverOpenTask = nil
+            model.openPanel()
+            return
+        }
+
+        guard model.settings.hoverToExpand, hoverOpenTask == nil else { return }
+        hoverOpenTask = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(220))
+            guard let self, !Task.isCancelled, self.currentPresentation == .compact else { return }
+            self.hoverOpenTask = nil
+            self.model.openPanel()
+        }
+    }
+
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -69,6 +127,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         panel.setFrame(currentFrame(for: .compact), display: true)
         panel.orderFront(nil)
         currentPresentation = .compact
+        startPointerMonitor()
     }
 
     func apply(_ presentation: PanelPresentation, animated: Bool = true) {
@@ -84,12 +143,14 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
 
         switch presentation {
         case .hidden:
+            stopPointerMonitor()
             containerTask?.cancel()
             panel.ignoresMouseEvents = false
             panel.setFrame(currentFrame(for: .compact), display: false)
             panel.orderOut(nil)
             return
         case .compact:
+            startPointerMonitor()
             let wasOpen = old == .expanded || old == .workspace
             transition(to: currentFrame(for: .compact), animated: animated && old != .compact)
             panel.orderFront(nil)
@@ -100,6 +161,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
                 previous.activate()
             }
         case .expanded, .workspace:
+            stopPointerMonitor()
             if old == .compact || old == .hidden {
                 let frontmost = NSWorkspace.shared.frontmostApplication
                 if let frontmost, frontmost.processIdentifier != ProcessInfo.processInfo.processIdentifier {
@@ -173,7 +235,7 @@ final class NotchWindowController: NSWindowController, NSWindowDelegate {
         panel.ignoresMouseEvents = target.width < container.width || target.height < container.height
         let expected = currentPresentation
         containerTask = Task { [weak self] in
-            try? await Task.sleep(for: .milliseconds(580))
+            try? await Task.sleep(for: .milliseconds(900))
             guard let self, !Task.isCancelled, self.currentPresentation == expected else { return }
             self.panel.setFrame(target, display: true)
             self.panel.ignoresMouseEvents = false

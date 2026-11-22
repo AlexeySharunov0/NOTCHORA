@@ -10,6 +10,7 @@ NOTCHORA is a local macOS client. It has:
 - no proxy server;
 - no background clipboard monitor;
 - no hidden screen or microphone capture;
+- no stored pointer history; while compact, only the current pointer position around the notch is checked to support click/hover opening;
 - no account system.
 
 When you send a prompt, the request goes **directly over HTTPS** from this Mac to the provider you selected. The provider’s own privacy policy and retention rules apply.
@@ -23,7 +24,6 @@ When you send a prompt, the request goes **directly over HTTPS** from this Mac t
 | Image/context attachments | Embedded in local conversation state | Same local file protections |
 | Task results and workflow definitions | Same state file | Same |
 | Launcher entries and preferences | `UserDefaults` / local state | Non-secret |
-| Window frame | `UserDefaults` | Non-secret |
 | Provider requests | Sent to the selected vendor over HTTPS | HTTPS only; no logging of keys |
 | API errors | Displayed to the user | Redacted for common key patterns |
 
@@ -94,6 +94,13 @@ Handoff, compare, workflows, and multi-AI may send conversation content or resul
 - Never polled or monitored in the background.
 - Clipboard writes occur only when you press a Copy control.
 
+## Pointer location while compact
+
+- The compact surface is exactly the hardware notch, so NOTCHORA checks the pointer position around the cutout to support click and optional hover opening.
+- Only the current screen coordinate is tested against the notch hit zone. It is not stored, logged, or sent anywhere.
+- No screen content, window content, clipboard content, or key events are read by this check.
+- The check is active only while the panel is compact.
+
 ## Accessibility / selected text
 
 - Used only when you invoke **Ask Selected Text** (`⌥S`) or the attach menu action.
@@ -128,6 +135,7 @@ When you use a provider, your prompt, attachments, and relevant conversation con
 - OpenAI: <https://openai.com/policies/privacy-policy>
 - Anthropic: <https://www.anthropic.com/legal/privacy>
 - Google: <https://policies.google.com/privacy>
+- DeepSeek: <https://platform.deepseek.com/privacy>
 
 NOTCHORA does not control provider retention, training, logging, or regional processing.
 

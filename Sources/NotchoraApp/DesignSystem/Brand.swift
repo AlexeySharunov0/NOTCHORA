@@ -7,26 +7,16 @@ struct NotchoraMark: View {
     var body: some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.nAccent, Color.nTeal],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: size * 0.28, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.22), lineWidth: 0.7)
-                }
+                .fill(Color.white)
 
             Image(systemName: "sparkles")
                 .font(.system(size: size * 0.47, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.96))
+                .foregroundStyle(Color.black.opacity(0.88))
                 .frame(width: size, height: size)
                 .offset(y: size * 0.05)
 
             Capsule(style: .continuous)
-                .fill(Color.black.opacity(0.88))
+                .fill(Color.black)
                 .frame(width: size * 0.42, height: size * 0.115)
                 .offset(y: -size * 0.02)
         }

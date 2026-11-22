@@ -53,6 +53,58 @@ final class ProviderTests: XCTestCase {
         XCTAssertEqual(messages.first?["content"] as? String, "Be concise.")
     }
 
+
+    func testDeepSeekStreamsTextAndUsage() async throws {
+        let transport = MockTransport(lines: [
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"thinking\"}}]}",
+            "",
+            "data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}",
+            "",
+            "data: {\"choices\":[{\"delta\":{\"content\":\" from DeepSeek\"}}],\"usage\":{\"prompt_tokens\":9,\"completion_tokens\":4}}",
+            "",
+            "data: [DONE]",
+            ""
+        ])
+        let provider = DeepSeekProvider(transport: transport)
+        let stream = try await provider.stream(
+            request: TestFixtures.request(provider: .deepSeek, modelID: "deepseek-v4-pro"),
+            apiKey: "sk-deepseek-secret"
+        )
+        let result = try await collect(stream)
+
+        XCTAssertEqual(result.text, "Hello from DeepSeek")
+        XCTAssertEqual(result.usage, TokenUsage(inputTokens: 9, outputTokens: 4))
+        let request = try XCTUnwrap(transport.lastRequest)
+        XCTAssertEqual(request.url?.absoluteString, "https://api.deepseek.com/chat/completions")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer sk-deepseek-secret")
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(request.httpBody)) as? [String: Any])
+        XCTAssertEqual(json["model"] as? String, "deepseek-v4-pro")
+        XCTAssertEqual(json["max_tokens"] as? Int, 128)
+        XCTAssertEqual(json["temperature"] as? Double, 0.4)
+    }
+
+
+    func testDeepSeekModelList() async throws {
+        let payload = #"{"data":[{"id":"deepseek-v4-pro"},{"id":"deepseek-flash"},{"id":"other-model"}]}"#
+        let transport = MockTransport(data: Data(payload.utf8))
+        let provider = DeepSeekProvider(transport: transport)
+        let models = try await provider.listModels(apiKey: "sk-test")
+        XCTAssertEqual(models.map(\.id), ["deepseek-flash", "deepseek-v4-pro"])
+        XCTAssertEqual(transport.lastRequest?.url?.absoluteString, "https://api.deepseek.com/models")
+    }
+
+    func testDeepSeekReasonerOmitsTemperature() async throws {
+        let transport = MockTransport(lines: ["data: [DONE]", ""])
+        let provider = DeepSeekProvider(transport: transport)
+        let stream = try await provider.stream(
+            request: TestFixtures.request(provider: .deepSeek, modelID: "deepseek-reasoner"),
+            apiKey: "sk-test"
+        )
+        _ = try await collect(stream)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: XCTUnwrap(transport.lastRequest?.httpBody)) as? [String: Any])
+        XCTAssertNil(json["temperature"])
+    }
+
     func testOpenAIReasoningModelOmitsTemperature() async throws {
         let transport = MockTransport(lines: ["data: [DONE]", ""])
         let provider = OpenAIProvider(transport: transport)

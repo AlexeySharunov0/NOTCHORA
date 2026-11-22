@@ -66,6 +66,11 @@ extension Color {
                 light: NSColor(srgbRed: 0.16, green: 0.38, blue: 0.82, alpha: 1),
                 dark: NSColor(srgbRed: 0.47, green: 0.66, blue: 1.0, alpha: 1)
             )
+        case .deepSeek:
+            dynamic(
+                light: NSColor(srgbRed: 0.22, green: 0.36, blue: 0.95, alpha: 1),
+                dark: NSColor(srgbRed: 0.52, green: 0.63, blue: 1.0, alpha: 1)
+            )
         }
     }
 }

@@ -8,7 +8,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 
 ### Live provider requests
 
-- No OpenAI, Anthropic, or Gemini API keys were provided.
+- No OpenAI, Anthropic, Gemini, or DeepSeek API keys were provided.
 - Request construction, authentication headers, SSE framing, streaming events, usage parsing, error mapping, model-list parsing, cancellation, and retry logic are covered by fixture-driven XCTest tests.
 - A live request can still differ due to provider-side changes, account restrictions, model access, region, or organization policy. Connect a key and use **Test Connection** to validate.
 - Model IDs shipped as curated suggestions may age. Use **Refresh Models** or add exact custom IDs.
@@ -95,6 +95,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 ### Provider APIs
 
 - NOTCHORA supports text and image input. It does not implement provider tool calling, function calling, code interpreter, web search, file upload APIs, or batches.
+- DeepSeek is text-only. Image attachments and screen capture are blocked while a DeepSeek model is active; DeepSeek thinking-mode `reasoning_content` deltas are not shown as chat text.
 - The app does not use a unified server-side proxy; every provider keeps its own request format.
 - Context-window limits are not precomputed. The provider returns an error if a prompt is too large; Handoff and Compare apply generous truncation warnings.
 - Token usage is displayed only when the provider reports it. Some responses may omit usage.
@@ -170,7 +171,7 @@ These paths are implemented but could not be exercised end-to-end on the build m
 
 ### Apple Intelligence / Liquid Glass
 
-- No Apple Intelligence APIs are used; providers are OpenAI, Anthropic, and Google.
+- No Apple Intelligence APIs are used; providers are OpenAI, Anthropic, Google, and DeepSeek.
 - No Liquid Glass API is used. The notch surface intentionally stays opaque black to merge with the hardware cutout.
 
 ## Intentional scope boundaries

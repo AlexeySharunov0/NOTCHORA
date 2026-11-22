@@ -71,6 +71,11 @@ public enum ModelCatalogDefaults {
                 AIModel(id: "gemini-2.5-pro", providerID: .gemini, displayName: "Gemini 2.5 Pro", contextWindow: 1_048_576, supportsVision: true),
                 AIModel(id: "gemini-2.5-flash", providerID: .gemini, displayName: "Gemini 2.5 Flash", contextWindow: 1_048_576, supportsVision: true)
             ]
+        case .deepSeek:
+            [
+                AIModel(id: "deepseek-v4-pro", providerID: .deepSeek, displayName: "DeepSeek V4 Pro", contextWindow: nil, supportsVision: false),
+                AIModel(id: "deepseek-flash", providerID: .deepSeek, displayName: "DeepSeek Flash", contextWindow: nil, supportsVision: false)
+            ]
         }
     }
 

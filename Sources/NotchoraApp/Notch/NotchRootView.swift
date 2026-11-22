@@ -11,13 +11,17 @@ struct NotchRootView: View {
 
     @State private var revealContent = true
     @State private var revealTask: Task<Void, Never>?
-    @State private var displayedSurfaceSize: CGSize = .zero
+    @State private var displayedSurfaceWidth: CGFloat = .zero
+    @State private var displayedSurfaceHeight: CGFloat = .zero
     @State private var isCollapsingToCompact = false
     @State private var collapseTask: Task<Void, Never>?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var renderedSurfaceSize: CGSize {
-        displayedSurfaceSize == .zero ? targetSurfaceSize : displayedSurfaceSize
+        CGSize(
+            width: displayedSurfaceWidth == .zero ? targetSurfaceSize.width : displayedSurfaceWidth,
+            height: displayedSurfaceHeight == .zero ? targetSurfaceSize.height : displayedSurfaceHeight
+        )
     }
 
     var body: some View {
@@ -42,7 +46,8 @@ struct NotchRootView: View {
         .preferredColorScheme(.dark)
         .onExitCommand(perform: handleEscape)
         .onAppear {
-            displayedSurfaceSize = targetSurfaceSize
+            displayedSurfaceWidth = targetSurfaceSize.width
+            displayedSurfaceHeight = targetSurfaceSize.height
             scheduleReveal(for: model.presentation, immediate: true)
         }
         .onChange(of: model.presentation) { old, presentation in
@@ -57,7 +62,7 @@ struct NotchRootView: View {
                !reduceMotion {
                 isCollapsingToCompact = true
                 collapseTask = Task {
-                    try? await Task.sleep(for: .milliseconds(360))
+                    try? await Task.sleep(for: .milliseconds(520))
                     guard !Task.isCancelled else { return }
                     isCollapsingToCompact = false
                 }
@@ -66,13 +71,16 @@ struct NotchRootView: View {
             }
         }
         .onChange(of: environment.screenWidth) { _, _ in
-            displayedSurfaceSize = targetSurfaceSize
+            displayedSurfaceWidth = targetSurfaceSize.width
+            displayedSurfaceHeight = targetSurfaceSize.height
         }
         .onChange(of: environment.screenHeight) { _, _ in
-            displayedSurfaceSize = targetSurfaceSize
+            displayedSurfaceWidth = targetSurfaceSize.width
+            displayedSurfaceHeight = targetSurfaceSize.height
         }
         .onChange(of: environment.notchWidth) { _, _ in
-            displayedSurfaceSize = targetSurfaceSize
+            displayedSurfaceWidth = targetSurfaceSize.width
+            displayedSurfaceHeight = targetSurfaceSize.height
         }
         .onDisappear {
             revealTask?.cancel()
@@ -116,20 +124,34 @@ struct NotchRootView: View {
         NotchGeometry.surfaceSize(for: model.presentation, environment: environment)
     }
 
-    private var surfaceAnimation: Animation? {
+    private var surfaceWidthAnimation: Animation? {
         guard model.presentationAnimationEnabled, model.settings.animationsEnabled, !reduceMotion else {
             return nil
         }
-        return .spring(response: 0.5, dampingFraction: 0.84, blendDuration: 0.14)
+        return .spring(response: 0.48, dampingFraction: 0.86, blendDuration: 0.12)
+    }
+
+    private var surfaceHeightAnimation: Animation? {
+        guard model.presentationAnimationEnabled, model.settings.animationsEnabled, !reduceMotion else {
+            return nil
+        }
+        return .spring(response: 0.72, dampingFraction: 0.90, blendDuration: 0.16)
     }
 
     private func animateSurface(to target: CGSize) {
-        if let surfaceAnimation {
-            withAnimation(surfaceAnimation) {
-                displayedSurfaceSize = target
+        if let surfaceWidthAnimation, let surfaceHeightAnimation {
+            // The island reaches sideways first, then settles downward. This is
+            // the horizontal-first motion of the reference, not a rectangle
+            // scaling uniformly in both axes.
+            withAnimation(surfaceWidthAnimation) {
+                displayedSurfaceWidth = target.width
+            }
+            withAnimation(surfaceHeightAnimation) {
+                displayedSurfaceHeight = target.height
             }
         } else {
-            displayedSurfaceSize = target
+            displayedSurfaceWidth = target.width
+            displayedSurfaceHeight = target.height
         }
     }
 
@@ -137,7 +159,7 @@ struct NotchRootView: View {
         if model.presentation == .compact {
             return NotchSurfaceShape(
                 topRadius: environment.hasPhysicalNotch ? 0 : 17,
-                bottomRadius: 17
+                bottomRadius: environment.hasPhysicalNotch ? 10 : 17
             )
         }
         return NotchSurfaceShape(
@@ -158,7 +180,7 @@ struct NotchRootView: View {
         }
         revealContent = false
         revealTask = Task {
-            try? await Task.sleep(for: .milliseconds(immediate ? 120 : 140))
+            try? await Task.sleep(for: .milliseconds(immediate ? 140 : 180))
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.24)) { revealContent = true }
         }
@@ -228,30 +250,13 @@ struct CompactNotchView: View {
         .onDisappear { hoverTask?.cancel() }
     }
 
-    /// The hardware notch is already black; the window only adds a few points
-    /// of clickable black around it and a tiny activity line at the lower edge.
+    /// The software compact surface is exactly the hardware cutout. It adds no
+    /// ears, chin, logo, line, or counter; it is indistinguishable from the
+    /// physical notch. Opening is available by clicking/hovering the cutout
+    /// area (where the window still receives events), the global shortcut, or
+    /// the menu-bar item.
     private var physicalNotch: some View {
-        ZStack(alignment: .bottom) {
-            Color.black
-            Group {
-                if hovered {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(Color.white.opacity(0.55))
-                } else if isGenerating {
-                    CompactWaveform(color: .nAccent, active: true)
-                } else if hasTasks {
-                    StatusDot(color: .nWarning, pulsing: true)
-                } else {
-                    Capsule()
-                        .fill(Color.white.opacity(0.22))
-                        .frame(width: 9, height: 2)
-                }
-            }
-            .frame(height: 12, alignment: .center)
-            .padding(.bottom, 2)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Color.black
     }
 
     private var fallbackPill: some View {

@@ -7,7 +7,7 @@ This is the functional inventory of the current build. “Implemented” means t
 - Compact notch extension around the physical MacBook cutout.
 - Physical notch detection using `NSScreen` auxiliary areas and safe-area insets.
 - Fallback compact pill on non-notched displays.
-- Click to expand.
+- Open from the exact-notch compact state with the global shortcut or menu-bar item; the cutout area also accepts pointer events where macOS delivers them.
 - Optional hover expansion with delay.
 - One continuous opaque-black surface that grows downward and outward from the physical notch.
 - No material, blur, glass, border, drop shadow, or separate floating workspace window.
@@ -17,13 +17,13 @@ This is the functional inventory of the current build. “Implemented” means t
 - Multi-display anchoring using an active-screen / built-in / main preference.
 - `canJoinAllSpaces`, `fullScreenAuxiliary`, `stationary`, and `.statusBar` window behavior.
 - Save/restore focus of the previously frontmost app.
-- Idle activity indicator for running tasks and streaming.
-- Compact activity indicator for streaming and running tasks; no task counter is drawn on the hardware notch.
+- Non-notched fallback pills retain the idle activity indicator; the exact-notch compact surface has no software content.
+- Compact surface is exactly the hardware cutout: no ears, chin, logo, line, or activity counter.
 - Escape / hide shortcut / click-outside collapse.
 - Reduce Motion and in-app animation preference.
 - System menus and AppKit controls follow the system/light/dark preference.
 - The notch surface itself is always opaque black so it merges with the hardware cutout.
-- App icon generated from a vector draw script.
+- Monochrome black-and-white app icon generated from a vector draw script.
 
 ## AI providers
 
@@ -54,6 +54,15 @@ This is the functional inventory of the current build. “Implemented” means t
 - Dynamic model list filtered to `generateContent`.
 - Usage metadata.
 - Key validation and model refresh.
+
+### DeepSeek
+
+- OpenAI-compatible Chat Completions SSE at `api.deepseek.com`.
+- `deepseek-v4-pro` and `deepseek-flash` (legacy IDs can be added as custom models).
+- `max_tokens` request field and Bearer authentication.
+- Reasoning deltas are not displayed as chat text; the final content is.
+- Text-only: image attachments and screen capture are blocked for DeepSeek models.
+- Dynamic model list, usage tokens, key validation, and custom model IDs.
 
 ### Provider infrastructure
 
@@ -306,13 +315,14 @@ This is the functional inventory of the current build. “Implemented” means t
 
 ## Quality
 
-- 55 XCTest unit tests.
+- 58 XCTest unit tests.
 - Fixture-driven provider streaming tests.
 - State persistence tests.
 - Keychain abstraction tests.
 - Task/workflow tests.
 - Settings persistence tests.
 - Debug visual QA harness with 29 screenshots, including expansion/collapse frames and overlays.
+- Monochrome black-and-white app icon.
 - Pixel validation of the opaque-black, welded, centered notch shape.
 - Reduced-motion shape checks.
 - Reduced Motion handling.

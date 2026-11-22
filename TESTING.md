@@ -13,7 +13,7 @@ The suite uses XCTest and does not call the network or the real Keychain.
 Current result (recorded during development):
 
 ```text
-Executed 55 tests, with 0 failures
+Executed 58 tests, with 0 failures
 ```
 
 ## Unit test coverage
@@ -35,12 +35,14 @@ Executed 55 tests, with 0 failures
 - OpenAI request headers/model/stream/system prompt;
 - Anthropic named SSE events, header/version, max tokens, system prompt;
 - Gemini SSE text/usage, `x-goog-api-key`, streaming URL;
+- DeepSeek SSE text/usage, reasoning-delta handling, `max_tokens`, bearer auth and endpoint;
 - invalid-key mapping (401/403);
 - rate-limit mapping (429);
 - missing-key failure before network;
 - OpenAI model-list filtering;
 - Anthropic model-list parsing;
 - Gemini model-list prefix stripping and capability filtering;
+- DeepSeek reasoner temperature omission;
 - SSE error payloads mapped to stream errors.
 
 Tests use a `MockTransport` that implements `HTTPTransport`; no live calls are made. Fixtures are representative SSE frames for each provider.
@@ -106,7 +108,7 @@ Tests use a `MockTransport` that implements `HTTPTransport`; no live calls are m
 
 ## What the unit tests deliberately do not do
 
-- They do not contact OpenAI, Anthropic, or Google.
+- They do not contact OpenAI, Anthropic, Google, or DeepSeek.
 - They do not access the user’s real Keychain.
 - They do not grant TCC permissions.
 - They do not capture the screen or microphone.
@@ -141,9 +143,9 @@ The script fails if any expected screenshot is missing or empty, if global short
 
 ### Visual QA observations
 
-- The compact surface is a black extension around the physical notch with a tiny activity mark; it contains no logo or task counter.
-- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 620×720 points.
-- The workspace was inspected at 1180×780 points.
+- The compact surface is exactly the measured hardware notch rectangle (185×37 pt on the test MacBook), with no ears, chin, logo, line, or activity counter. The software surface is intentionally invisible; opening is via the shortcut, menu-bar item, or the cutout area where pointer events reach the panel.
+- Expanded onboarding, chat, history, tasks, workflows, and Multi-AI layouts were inspected at 860×540 points.
+- The workspace was inspected at 1180×700 points.
 - The surface was captured at 70 ms, 170 ms, 350 ms, and settled during expansion, and at 80/200/400 ms during collapse. A Swift validator confirms that every sampled surface edge is opaque black, the top edge is welded, the growing shape stays horizontally centered, and the lower corners are transparent.
 - Settings, model picker, Handoff, System Prompt, Screen Capture, Voice, and Workflow Editor were verified as in-notch surfaces rather than separate windows.
 - The former translucent card/material styling was removed; content now sits directly on opaque black.
@@ -162,7 +164,8 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 - [ ] The expanded surface is uniformly opaque black; there is no blur, glass, gray fill, or outer stroke.
 - [ ] Content fades in after the black shape has started growing.
 - [ ] Collapsing returns the same black shape to the compact notch size.
-- [ ] Click compact → expanded.
+- [ ] Press ⌥Space or use the menu-bar item to expand from the exact-notch compact state.
+- [ ] Click/hover the cutout area and confirm it expands where macOS delivers pointer events.
 - [ ] Click outside → collapse; previous app regains focus.
 - [ ] Hover expansion works when enabled.
 - [ ] Escape collapses.
@@ -179,7 +182,7 @@ These checks require a Mac with a physical notch, a GUI session, and optionally 
 ### AI chat
 
 - [ ] Connect an OpenAI key, refresh models, send a prompt.
-- [ ] Connect Anthropic and Gemini and repeat.
+- [ ] Connect Anthropic, Gemini, and DeepSeek and repeat.
 - [ ] Streaming text appears incrementally.
 - [ ] Stop keeps partial output and marks the message cancelled.
 - [ ] Regenerate produces a new answer.
@@ -275,7 +278,7 @@ The development machine was a notched MacBook running macOS 26.6. The following 
 - global hotkey registration success (runtime QA report: `shortcutErrors: none`);
 - composer focus after expansion (runtime QA report: `firstResponder: NSTextView`);
 - settings opening inside the notch workspace and tab switching;
-- 55 unit tests.
+- 58 unit tests.
 
 The following require resources not available in the build environment and are documented as verification items, not claimed as live-tested:
 

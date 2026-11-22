@@ -8,6 +8,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
     case openAI = "openai"
     case anthropic = "anthropic"
     case gemini = "gemini"
+    case deepSeek = "deepseek"
 
     public var id: String { rawValue }
 
@@ -16,6 +17,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
         case .openAI: "OpenAI"
         case .anthropic: "Anthropic"
         case .gemini: "Google Gemini"
+        case .deepSeek: "DeepSeek"
         }
     }
 
@@ -24,6 +26,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
         case .openAI: "OpenAI"
         case .anthropic: "Claude"
         case .gemini: "Gemini"
+        case .deepSeek: "DeepSeek"
         }
     }
 
@@ -32,6 +35,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
         case .openAI: "O"
         case .anthropic: "A"
         case .gemini: "G"
+        case .deepSeek: "D"
         }
     }
 
@@ -45,6 +49,8 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
             URL(string: "https://console.anthropic.com/settings/keys")!
         case .gemini:
             URL(string: "https://aistudio.google.com/app/apikey")!
+        case .deepSeek:
+            URL(string: "https://platform.deepseek.com/api_keys")!
         }
     }
 
@@ -53,6 +59,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
         case .openAI: "sk-…"
         case .anthropic: "sk-ant-…"
         case .gemini: "AIza…"
+        case .deepSeek: "sk-…"
         }
     }
 
@@ -61,6 +68,7 @@ public enum AIProviderID: String, CaseIterable, Codable, Hashable, Sendable, Ide
         case .openAI: "gpt-4.1"
         case .anthropic: "claude-sonnet-4-20250514"
         case .gemini: "gemini-2.5-pro"
+        case .deepSeek: "deepseek-v4-pro"
         }
     }
 }

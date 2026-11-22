@@ -171,7 +171,7 @@ enum QAHarness {
         capture(panel, name: "21-collapse-200ms", directory: outputDirectory)
         try? await Task.sleep(for: .milliseconds(200))
         capture(panel, name: "22-collapse-400ms", directory: outputDirectory)
-        try? await Task.sleep(for: .milliseconds(350))
+        try? await Task.sleep(for: .milliseconds(700))
         capture(panel, name: "23-collapse-final", directory: outputDirectory)
 
         print("QA screenshots written to \(outputDirectory.path)")

@@ -8,7 +8,7 @@ NOTCHORA is a Swift Package with two targets and one XCTest target:
 |---|---|---|
 | `NotchoraCore` | `Sources/NotchoraCore` | Domain models, provider wire formats, SSE, persistence, Keychain abstraction, task center, workflow engine, search, settings, utilities |
 | `NotchoraApp` | `Sources/NotchoraApp` | App lifecycle, AppKit windows, SwiftUI design system and screens, global hotkeys, permissions, voice, screen capture, app launcher |
-| `NotchoraCoreTests` | `Tests/NotchoraCoreTests` | 55 unit tests with injected transport/service/keychain doubles |
+| `NotchoraCoreTests` | `Tests/NotchoraCoreTests` | 58 unit tests with injected transport/service/keychain doubles |
 
 There are no external package dependencies.
 
@@ -22,7 +22,7 @@ flowchart TB
     end
 
     subgraph Core["NotchoraCore"]
-        Providers["OpenAI / Anthropic / Gemini providers"]
+        Providers["OpenAI / Anthropic / Gemini / DeepSeek providers"]
         AI["AIService + ChatRequestBuilder"]
         Store["StateStore actor"]
         Keys["KeychainStore"]
@@ -79,7 +79,7 @@ The panel is only a transparent container. Inside it, `NotchRootView` renders th
 - compact, expanded, and workspace surface sizes;
 - the window container frame used while the shape animates.
 
-On notched displays the compact surface is anchored to the top edge and sized from the hardware notch width. On displays without a notch, a compact black pill is positioned just below the menu bar with rounded top and bottom corners.
+On notched displays the compact surface is exactly the measured hardware notch rectangle (width and safe-area height), with the same black fill and a 10 pt lower-corner radius. It adds no clickable ears or chin. On displays without a notch, a compact black pill is positioned just below the menu bar with rounded top and bottom corners.
 
 Expansion saves the previously frontmost app, activates NOTCHORA so text fields and VoiceOver are reliable, and restores the previous app on collapse only when NOTCHORA is still frontmost. This avoids focus theft while keeping the panel usable.
 
@@ -99,7 +99,7 @@ stateDiagram-v2
     Hidden --> Expanded: open shortcut / menu
 ```
 
-The window container is enlarged immediately when the surface needs room and trimmed back only after the spring has settled. The visible black shape itself is animated by SwiftUI from a `displayedSurfaceSize` state; it grows down and out from the top centre. Content is faded in after the growth starts, and the compact activity indicator is hidden while the shape collapses. This avoids a resized-window flash, a rectangular snapshot, or a separate panel appearing under the notch.
+The window container is enlarged immediately when the surface needs room and trimmed back only after the spring has settled. The visible black shape itself is animated by SwiftUI from separate width and height states: width springs first, then height settles, so it stretches sideways out of the cutout before descending. Content is faded in after the growth starts, and the compact content is hidden while the shape collapses. This avoids a resized-window flash, a rectangular snapshot, or a separate panel appearing under the notch.
 
 `Reduce Motion` and the in-app animation setting disable the surface spring; the shape changes size immediately.
 
@@ -164,6 +164,7 @@ Each provider has its own request and response decoding:
 | OpenAI | `POST /v1/chat/completions` | SSE `choices[].delta.content`; `usage` |
 | Anthropic | `POST /v1/messages` | Named SSE events (`message_start`, `content_block_delta`, `message_delta`, …) |
 | Gemini | `POST /v1beta/models/{model}:streamGenerateContent?alt=sse` | SSE `candidates[].content.parts[].text`; `usageMetadata` |
+| DeepSeek | `POST /chat/completions` | OpenAI-compatible SSE `choices[].delta.content`; `max_tokens`; reasoning deltas ignored |
 
 Request builders handle provider-specific differences:
 

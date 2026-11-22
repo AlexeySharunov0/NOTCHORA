@@ -297,6 +297,13 @@ struct ComposerView: View {
     }
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard model.activeModel.supportsVision else {
+            model.showToast(.warning(
+                "This model does not accept images",
+                detail: "Choose a vision-capable model before attaching an image."
+            ))
+            return false
+        }
         guard let provider = providers.first else { return false }
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in

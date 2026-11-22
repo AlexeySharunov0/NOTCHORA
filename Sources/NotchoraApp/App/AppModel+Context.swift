@@ -104,6 +104,13 @@ extension AppModel {
     }
 
     func captureScreen(mode: ScreenCaptureMode) {
+        guard activeModel.supportsVision else {
+            showToast(.warning(
+                "This model does not accept images",
+                detail: "Choose a vision-capable model before capturing the screen."
+            ))
+            return
+        }
         permissions.refresh()
         guard permissions.screenRecording == .granted || screenCaptureService.hasPermission else {
             permissions.requestScreenRecording()

@@ -28,7 +28,7 @@ Most AI work is fragmented across browser tabs and separate desktop apps. NOTCHO
 | Area | What is implemented |
 |---|---|
 | Notch experience | One continuous, opaque-black notch surface that physically grows downward and outward from the cutout; compact, expanded, and full workspace states; physical-notch detection; non-notch fallback; multi-display anchoring; Spaces/full-screen behavior; spring shape animation; reduced-motion support |
-| AI providers | Real streaming integrations for OpenAI, Anthropic Claude, and Google Gemini; per-provider model discovery; custom model IDs; cancellation; timeout/retry; API key validation; token usage |
+| AI providers | Real streaming integrations for OpenAI, Anthropic Claude, Google Gemini, and DeepSeek; per-provider model discovery; custom model IDs; cancellation; timeout/retry; API key validation; token usage |
 | Chat | Multiple conversations; rename/delete/pin/search; Markdown; syntax highlighting; tables; copy; regenerate; stop; per-chat system prompt; local history |
 | Multi-AI | Parallel independent streams; per-model cancel/retry; side-by-side results; model-generated Compare Answers with an explicit fact-checking disclaimer; save results to history |
 | Handoff | Full conversation, selected messages, or an AI-generated summary; editable transferred context; target model picker; optional auto-continuation |
@@ -84,9 +84,9 @@ The build is ad-hoc signed for local use. For launch at login, move `NOTCHORA.ap
 
 ## Connect a provider
 
-1. Click the notch (or press `⌥Space`).
+1. Press `⌥Space`, use the menu-bar item, or click/hover the cutout area. The compact state is exactly the hardware cutout, with no extra software ears or chin.
 2. Open **Settings → AI Providers**.
-3. Paste an API key for OpenAI, Anthropic, or Google Gemini.
+3. Paste an API key for OpenAI, Anthropic, Google Gemini, or DeepSeek.
 4. Choose **Save & Verify**.
 5. Use **Refresh Models** to replace the curated suggestions with the provider's current model list.
 
@@ -97,6 +97,7 @@ Provider key pages:
 - OpenAI: <https://platform.openai.com/api-keys>
 - Anthropic: <https://console.anthropic.com/settings/keys>
 - Google AI Studio: <https://aistudio.google.com/app/apikey>
+- DeepSeek: <https://platform.deepseek.com/api_keys>
 
 The model list is intentionally data-driven. If a provider adds a model before NOTCHORA ships an update, refresh the list or add the exact model ID under **Custom models**.
 
@@ -144,7 +145,7 @@ NOTCHORA/
 │   ├── NotchoraCore/        # models, providers, streaming, storage, security,
 │   │                        # tasks, workflows, domain logic
 │   └── NotchoraApp/         # AppKit lifecycle, SwiftUI UI, services, platform APIs
-├── Tests/NotchoraCoreTests/ # 55 XCTest tests
+├── Tests/NotchoraCoreTests/ # 58 XCTest tests
 ├── Scripts/                 # build, icon generation, visual QA
 ├── Resources/Info.plist
 ├── Docs/                    # screenshots and supporting documentation
@@ -197,7 +198,7 @@ This repository contains a working native app, not a mockup. The core flows comp
 
 Some capabilities require credentials or macOS TCC permissions that were not available in the build environment:
 
-- live requests to OpenAI/Anthropic/Gemini were not executed without user keys; request construction and SSE parsing are covered by fixture-driven tests;
+- live requests to OpenAI/Anthropic/Gemini/DeepSeek were not executed without user keys; request construction and SSE parsing are covered by fixture-driven tests;
 - microphone/Speech, Accessibility, and Screen Recording end-to-end paths were not exercised without TCC grants;
 - launch-at-login reports unavailable for an ad-hoc build outside `/Applications`;
 - an XCUITest bundle is not included; UI automation is screenshot-based plus a manual checklist.

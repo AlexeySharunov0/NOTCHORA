@@ -91,6 +91,16 @@ Keys are saved in Keychain only after verification succeeds. Choose **Save** ins
 - Requests use `streamGenerateContent?alt=sse`.
 - The model list is fetched from `GET /v1beta/models`; only models supporting `generateContent` are shown.
 
+### DeepSeek
+
+- Endpoint: `https://api.deepseek.com`
+- Key page: <https://platform.deepseek.com/api_keys>
+- Key format: `sk-…`
+- Requests use `POST /chat/completions` with OpenAI-compatible SSE.
+- Models: `deepseek-v4-pro` and `deepseek-flash`; legacy IDs can be added as custom models.
+- Text only; image attachments and screen capture are blocked for these models.
+- The model list is fetched from `GET /models`.
+
 If a newly released model is missing, either click **Refresh Models** or add its exact API identifier under **Custom models**.
 
 ## Permissions
@@ -184,7 +194,7 @@ Delete data with **Settings → Privacy**:
 
 | Symptom | Action |
 |---|---|
-| Panel opens then immediately collapses | Click the notch again; ensure NOTCHORA is the active app, or check that another app is not grabbing focus |
+| Panel opens then immediately collapses | Press ⌥Space again or click the cutout zone; ensure another app is not grabbing focus |
 | No API key banner | Connect the selected provider in Settings → AI Providers |
 | “Invalid API key” | Verify the key and provider; use Test Connection |
 | Model not found | Refresh the model list or add the exact model ID under Custom models |

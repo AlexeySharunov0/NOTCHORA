@@ -35,7 +35,8 @@ public struct ProviderRegistry: Sendable {
         self.init(providers: [
             OpenAIProvider(transport: transport, retryPolicy: retryPolicy),
             AnthropicProvider(transport: transport, retryPolicy: retryPolicy),
-            GeminiProvider(transport: transport, retryPolicy: retryPolicy)
+            GeminiProvider(transport: transport, retryPolicy: retryPolicy),
+            DeepSeekProvider(transport: transport, retryPolicy: retryPolicy)
         ])
     }
 
@@ -171,13 +172,21 @@ enum ModelHeuristics {
             return lower.contains("claude-3") || lower.contains("claude-4") || lower.contains("claude-sonnet") || lower.contains("claude-opus") || lower.contains("claude-haiku")
         case .gemini:
             return lower.contains("gemini")
+        case .deepSeek:
+            return false
         }
     }
 
     static func supportsTemperature(id: String, provider: AIProviderID) -> Bool {
-        guard provider == .openAI else { return true }
         let lower = id.lowercased()
-        return !(lower.hasPrefix("o1") || lower.hasPrefix("o3") || lower.hasPrefix("o4") || lower.hasPrefix("gpt-5"))
+        switch provider {
+        case .openAI:
+            return !(lower.hasPrefix("o1") || lower.hasPrefix("o3") || lower.hasPrefix("o4") || lower.hasPrefix("gpt-5"))
+        case .deepSeek:
+            return !lower.contains("reasoner")
+        case .anthropic, .gemini:
+            return true
+        }
     }
 
     static func displayName(for id: String, provider: AIProviderID) -> String {
